@@ -1,0 +1,55 @@
+# Backup and Disaster Recovery
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: osig-backup
+  namespace: osig-production
+spec:
+  schedule: "0 2 * * *"
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: backup
+            image: osig/backup:latest
+            env:
+            - name: S3_BUCKET
+              value: "osig-backups"
+            - name: ENCRYPTION_KEY
+              valueFrom: {secretKeyRef: {name: osig-secrets, key: backup-encryption-key}}
+            command: ["/bin/bash", "-c"]
+            args:
+            - |
+              # Multi-Domain Encrypted Backup Protocol
+              neo4j-admin backup --backup-dir=/tmp/backup --name=neo4j-backup
+              pg_dumpall -h postgres.osig-production.svc.cluster.local -U postgres > /tmp/postgres-backup.sql
+              kafka-backup --bootstrap-server osig-kafka-cluster-kafka-bootstrap:9092 --backup-dir /tmp/kafka-backup
+              timestamp=$(date +%Y%m%d_%H%M%S)
+              tar -czf /tmp/osig-backup-$timestamp.tar.gz /tmp/neo4j-backup* /tmp/postgres-backup.sql /tmp/kafka-backup
+              openssl enc -aes-256-cbc -salt -in /tmp/osig-backup-$timestamp.tar.gz -out /tmp/osig-backup-$timestamp.tar.gz.enc -pass env:ENCRYPTION_KEY
+              aws s3 cp /tmp/osig-backup-$timestamp.tar.gz.enc s3://${S3_BUCKET}/backups/
+            resources:
+              requests: {memory: "4Gi", cpu: "2"}
+          restartPolicy: OnFailure
+
+---
+# Security Scanning (Trivy)
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: security-scan
+  namespace: osig-production
+spec:
+  schedule: "0 0 * * 0"
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: trivy
+            image: aquasec/trivy:latest
+            command: ["trivy"]
+            args: ["filesystem", "--severity", "HIGH,CRITICAL", "--exit-code", "1", "/"]
+          restartPolicy: Never

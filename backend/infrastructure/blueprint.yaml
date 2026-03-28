@@ -1,0 +1,62 @@
+version: '3.8'
+services:
+  # Layer 1: Stealth Ingestion
+  stealth-proxy:
+    image: tor-proxy:latest
+    networks: [ingress-net]
+    deploy:
+      replicas: 10
+      update_config:
+        parallelism: 2
+        delay: 10s
+    
+  # Layer 2: Processing Core
+  kafka-cluster:
+    image: confluentinc/cp-kafka:7.3.0
+    deploy:
+      mode: replicated
+      replicas: 3
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+    
+  # Layer 3: Intelligence Engine
+  ai-processor:
+    image: tensorflow/serving:latest-gpu
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 2
+              capabilities: [gpu]
+    
+  # Layer 4: Secure Storage
+  postgres-cluster:
+    image: postgres:15-alpine
+    deploy:
+      mode: replicated
+      replicas: 2
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    environment:
+      POSTGRES_PASSWORD_FILE: /run/secrets/db_password
+
+networks:
+  ingress-net:
+    driver: overlay
+    attachable: true
+  processing-net:
+    driver: overlay
+    internal: true  # Isolated from external access
+  storage-net:
+    driver: overlay
+    internal: true
+
+volumes:
+  pgdata:
+    driver: local
+    driver_opts:
+      type: crypt
+      device: /dev/sdb1
+      o: "cipher=aes-xts-plain64,size=256"

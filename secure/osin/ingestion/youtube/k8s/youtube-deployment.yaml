@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: youtube-ingestion
+  namespace: osin-production
+  labels:
+    app: youtube-ingestion
+    component: ingestion
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: youtube-ingestion
+  template:
+    metadata:
+      labels:
+        app: youtube-ingestion
+        component: ingestion
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: youtube-ingestor
+        image: osin/youtube-ingestion:latest
+        env:
+        - name: KAFKA_BROKERS
+          value: "kafka-cluster-kafka-bootstrap:9092"
+        - name: YOUTUBE_API_KEYS
+          valueFrom:
+            secretKeyRef:
+              name: youtube-api-secrets
+              key: api-keys
+        - name: YOUTUBE_CONFIG
+          value: "/app/config/ingestion.yaml"
+        ports:
+        - containerPort: 8080
+          name: metrics
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "1000m"
+          limits:
+            memory: "2Gi"
+            cpu: "2000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/config
+        - name: data-volume
+          mountPath: /tmp
+      volumes:
+      - name: config-volume
+        configMap:
+          name: youtube-ingestion-config
+      - name: data-volume
+        emptyDir: {}
+      - name: secret-volume
+        secret:
+          secretName: youtube-api-secrets

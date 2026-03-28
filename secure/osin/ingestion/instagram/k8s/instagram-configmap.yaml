@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: instagram-ingestion-config
+  namespace: osin-production
+data:
+  ingestion.yaml: |
+    instagram:
+      instaloader:
+        enabled: true
+        compliance_mode: strict
+        rate_limits:
+          requests_per_hour: 200
+          delay_between_requests: 18
+        collection_settings:
+          download_pictures: false
+          download_videos: false
+          download_video_thumbnails: false
+          download_geotags: false
+          download_comments: true
+          save_metadata: true
+      playwright:
+        enabled: true
+        headless: true
+        browser_concurrency: 2
+      monitoring_targets:
+        profiles:
+          - cnn
+          - bbcnews
+          - reuters
+          - apnews
+          - whitehouse
+          - un
+          - natgeo
+          - sciencechannel
+          - techcrunch
+        hashtags:
+          - breakingnews
+          - emergency
+          - crisis
+          - disaster
+          - protest
+          - election
+          - climate
+          - technology
+          - health
+          - education
+      compliance:
+        only_public_data: true
+        no_media_download: true
+        metadata_only: true
+        respect_rate_limits: true
+    kafka:
+      topics:
+        posts: "raw.instagram.posts"
+        stories: "raw.instagram.stories"
+        profiles: "raw.instagram.profiles"
+      batch_size: 1000
+      compression: snappy
+    monitoring:
+      metrics_port: 8080
+      health_check_interval: 30
+      compliance_monitoring: true

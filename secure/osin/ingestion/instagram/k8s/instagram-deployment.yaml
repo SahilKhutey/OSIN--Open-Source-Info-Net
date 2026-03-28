@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: instagram-ingestion
+  namespace: osin-production
+  labels:
+    app: instagram-ingestion
+    component: ingestion
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: instagram-ingestion
+  template:
+    metadata:
+      labels:
+        app: instagram-ingestion
+        component: ingestion
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: instagram-ingestor
+        image: osin/instagram-ingestion:latest
+        env:
+        - name: KAFKA_BROKERS
+          value: "kafka-cluster-kafka-bootstrap:9092"
+        - name: INSTAGRAM_CONFIG
+          value: "/app/config/ingestion.yaml"
+        - name: COMPLIANCE_MODE
+          value: "strict"
+        ports:
+        - containerPort: 8080
+          name: metrics
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/config
+        - name: session-volume
+          mountPath: /app/sessions
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          readOnlyRootFilesystem: false
+      volumes:
+      - name: config-volume
+        configMap:
+          name: instagram-ingestion-config
+      - name: session-volume
+        emptyDir: {}
+      imagePullSecrets:
+      - name: registry-secret

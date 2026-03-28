@@ -1,0 +1,107 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: twitter-ingestion
+  namespace: osin-production
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: twitter-ingestion
+  template:
+    metadata:
+      labels:
+        app: twitter-ingestion
+    spec:
+      containers:
+      - name: twitter-worker
+        image: osin/twitter-ingestion:latest
+        env:
+        - name: KAFKA_BROKERS
+          value: "kafka1:9092,kafka2:9093"
+        - name: RATE_LIMIT_TWITTER
+          value: "1000"
+        - name: LOG_LEVEL
+          value: "INFO"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reddit-ingestion
+  namespace: osin-production
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: reddit-ingestion
+  template:
+    metadata:
+      labels:
+        app: reddit-ingestion
+    spec:
+      containers:
+      - name: reddit-worker
+        image: osin/reddit-ingestion:latest
+        env:
+        - name: KAFKA_BROKERS
+          value: "kafka1:9092,kafka2:9093"
+        - name: REDDIT_CLIENT_IDS
+          valueFrom:
+            secretKeyRef:
+              name: reddit-secrets
+              key: client_ids
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ingestion-config
+  namespace: osin-production
+data:
+  rss-feeds.yaml: |
+    feeds:
+      - name: "BBC World"
+        url: "http://feeds.bbci.co.uk/news/world/rss.xml"
+        enabled: true
+      - name: "Reuters"
+        url: "https://www.reutersagency.com/feed/"
+        enabled: true
+  kafka-topics.yaml: |
+    topics:
+      - name: "raw.twitter.posts"
+        partitions: 10
+        replication: 3
+      - name: "raw.reddit.posts"
+        partitions: 8
+        replication: 3
+      - name: "raw.youtube.videos"
+        partitions: 6
+        replication: 3
+      - name: "raw.news.articles"
+        partitions: 12
+        replication: 3

@@ -1,0 +1,23 @@
+# Auto-remediation for security issues
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: auto-remediation
+  namespace: osig-production
+spec:
+  schedule: "*/15 * * * *" # Every 15 minutes
+  concurrencyPolicy: Forbid
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: remediator
+            image: osig/remediator:latest
+            env:
+            - name: SLACK_WEBHOOK
+              valueFrom: {secretKeyRef: {name: osig-secrets, key: slack-webhook}}
+            command: ["python", "/app/remediate.py"]
+            resources:
+              requests: {memory: "1Gi", cpu: "0.5"}
+          restartPolicy: OnFailure

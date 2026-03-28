@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: youtube-ingestion
+  namespace: osin-production
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: youtube-ingestion
+  template:
+    metadata:
+      labels:
+        app: youtube-ingestion
+    spec:
+      containers:
+      - name: youtube-worker
+        image: osin/youtube-ingestion:latest
+        env:
+        - name: KAFKA_BROKERS
+          value: "kafka1:9092,kafka2:9093"
+        - name: YOUTUBE_API_KEYS
+          valueFrom:
+            secretKeyRef:
+              name: youtube-secrets
+              key: api-keys
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10

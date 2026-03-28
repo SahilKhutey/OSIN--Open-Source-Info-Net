@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: reddit-ingestion
+  namespace: osin-production
+  labels:
+    app: reddit-ingestion
+    component: ingestion
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: reddit-ingestion
+  template:
+    metadata:
+      labels:
+        app: reddit-ingestion
+        component: ingestion
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: reddit-praw
+        image: osin/reddit-ingestion:latest
+        env:
+        - name: KAFKA_BROKERS
+          value: "kafka-cluster-kafka-bootstrap:9092"
+        - name: REDDIT_CLIENT_ID
+          valueFrom:
+            secretKeyRef:
+              name: reddit-secrets
+              key: client-id
+        - name: REDDIT_CLIENT_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: reddit-secrets
+              key: client-secret
+        - name: MONITORED_SUBREDDITS
+          value: "worldnews,news,politics,economics,technology,science"
+        - name: LOG_LEVEL
+          value: "INFO"
+        ports:
+        - containerPort: 8080
+          name: metrics
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/config
+      volumes:
+      - name: config-volume
+        configMap:
+          name: reddit-ingestion-config
+      - name: secret-volume
+        secret:
+          secretName: reddit-api-secrets

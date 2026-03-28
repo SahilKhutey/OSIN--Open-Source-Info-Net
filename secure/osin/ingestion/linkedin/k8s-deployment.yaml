@@ -1,0 +1,212 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: linkedin-ingestion
+  namespace: osin-production
+  labels:
+    app: linkedin-ingestion
+    component: ingestion
+spec:
+  replicas: 1  # Keep low due to rate limiting
+  selector:
+    matchLabels:
+      app: linkedin-ingestion
+  template:
+    metadata:
+      labels:
+        app: linkedin-ingestion
+        component: ingestion
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: linkedin-ingestor
+        image: osin/linkedin-ingestion:latest
+        env:
+        - name: KAFKA_BROKERS
+          value: "kafka-cluster-kafka-bootstrap:9092"
+        - name: LINKEDIN_CONFIG
+          value: "/app/config/ingestion.yaml"
+        - name: COMPLIANCE_MODE
+          value: "strict"
+        - name: PROXY_LIST
+          valueFrom:
+            secretKeyRef:
+              name: linkedin-secrets
+              key: proxy-list
+        ports:
+        - containerPort: 8080
+          name: metrics
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/config
+        - name: chrome-cache
+          mountPath: /tmp/chrome
+        securityContext:
+          runAsNonRoot: true
+          runAsUser: 1000
+          readOnlyRootFilesystem: false
+      volumes:
+      - name: config-volume
+        configMap:
+          name: linkedin-ingestion-config
+      - name: chrome-cache
+        emptyDir: {}
+      imagePullSecrets:
+      - name: registry-secret
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: linkedin-ingestion-config
+  namespace: osin-production
+data:
+  ingestion.yaml: |
+    linkedin:
+      playwright:
+        enabled: true
+        headless: true
+        browser_concurrency: 1
+        page_load_timeout: 30000
+      proxy:
+        enabled: true
+        rotation_enabled: true
+      session_management:
+        enabled: true
+        max_sessions_per_hour: 50
+      monitoring_targets:
+        job_keywords:
+          - cybersecurity
+          - data scientist
+          - ai engineer
+          - machine learning
+          - blockchain
+          - cloud architect
+          - devops
+          - site reliability
+        company_targets:
+          - microsoft
+          - google
+          - amazon
+          - meta
+          - apple
+          - tesla
+          - netflix
+          - uber
+          - airbnb
+          - linkedin
+          - salesforce
+          - oracle
+          - ibm
+          - sap
+          - accenture
+      rate_limits:
+        requests_per_hour: 100
+        delay_between_requests: 36
+      compliance:
+        only_public_data: true
+        no_automated_login: true
+        metadata_only: true
+        respect_rate_limits: true
+    kafka:
+      topics:
+        jobs: "raw.linkedin.jobs"
+        profiles: "raw.linkedin.profiles"
+        companies: "raw.linkedin.companies"
+        posts: "raw.linkedin.posts"
+      batch_size: 100
+      compression: snappy
+    monitoring:
+      metrics_port: 8080
+      health_check_interval: 30
+      compliance_monitoring: true
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: linkedin-secrets
+  namespace: osin-production
+type: Opaque
+data:
+  # Base64 encoded proxy list (example value)
+  proxy-list: base64_encoded_proxy_list
+  # Base64 encoded session credentials (if needed)
+  session-credentials: base64_encoded_credentials
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: linkedin-ingestion
+  namespace: osin-production
+spec:
+  selector:
+    app: linkedin-ingestion
+  ports:
+  - name: metrics
+    port: 8080
+    targetPort: 8080
+  - name: http
+    port: 80
+    targetPort: 8080
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: linkedin-ingestion-monitor
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: linkedin-ingestion
+  endpoints:
+  - port: metrics
+    interval: 60s
+    path: /metrics
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: linkedin-ingestion-hpa
+  namespace: osin-production
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: linkedin-ingestion
+  minReplicas: 1
+  maxReplicas: 2
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15

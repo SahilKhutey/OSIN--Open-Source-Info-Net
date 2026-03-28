@@ -1,0 +1,25 @@
+# OSIN Core Requirements
+fastapi[all]
+uvicorn
+gunicorn
+sqlalchemy[asyncio]
+asyncpg
+redis
+celery
+aiokafka
+pydantic-settings
+psycopg2-binary
+scipy
+numpy
+pandas
+xgboost
+scikit-learn
+spacy
+transformers
+torch --index-url https://download.pytorch.org/whl/cpu
+sentence-transformers
+playwright
+scrapy
+python-dotenv
+prom-client
+loguru

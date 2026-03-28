@@ -1,0 +1,8 @@
+# Ingestion configuration
+kafka:
+  brokers: ["kafka1:9092", "kafka2:9093"]
+  topic: "raw.twitter.posts"
+
+rate_limits:
+  twitter: 1000
+  reddit: 600

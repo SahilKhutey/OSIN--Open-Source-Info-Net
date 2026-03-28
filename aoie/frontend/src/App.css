@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --green-glow: 0 0 10px rgba(16, 185, 129, 0.3);
+  --grid-size: 40px;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #000;
+  overflow: hidden;
+  font-family: 'Inter', 'Roboto Mono', monospace;
+  color: #10b981;
+}
+
+.aoie-dashboard {
+  background-image: 
+    linear-gradient(rgba(6, 78, 59, 0.05) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(6, 78, 59, 0.05) 1px, transparent 1px);
+  background-size: var(--grid-size) var(--grid-size);
+}
+
+.signal-card {
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(5px);
+}
+
+.signal-card:hover {
+  box-shadow: 0 0 15px rgba(16, 185, 129, 0.1);
+}
+
+@keyframes scanline {
+  0% { transform: translateY(-100%); }
+  100% { transform: translateY(100%); }
+}
+
+.aoie-dashboard::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06));
+  background-size: 100% 2px, 3px 100%;
+  pointer-events: none;
+  z-index: 100;
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+  width: 4px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #064e3b;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #10b981;
+}

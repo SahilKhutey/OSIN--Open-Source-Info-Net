@@ -1,0 +1,173 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: news-ingestion
+  namespace: osin-production
+  labels:
+    app: news-ingestion
+    component: ingestion
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: news-ingestion
+  template:
+    metadata:
+      labels:
+        app: news-ingestion
+        component: ingestion
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8080"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: news-ingestor
+        image: osin/news-ingestion:latest
+        env:
+        - name: KAFKA_BROKERS
+          value: "kafka-cluster-kafka-bootstrap:9092"
+        - name: NEWS_CONFIG
+          value: "/app/config/ingestion.yaml"
+        - name: COMPLIANCE_MODE
+          value: "strict"
+        ports:
+        - containerPort: 8080
+          name: metrics
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "500m"
+          limits:
+            memory: "1Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 30
+          periodSeconds: 10
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 5
+        volumeMounts:
+        - name: config-volume
+          mountPath: /app/config
+      volumes:
+      - name: config-volume
+        configMap:
+          name: news-ingestion-config
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: news-ingestion-config
+  namespace: osin-production
+data:
+  ingestion.yaml: |
+    news:
+      newspaper3k:
+        enabled: true
+        settings:
+          memoize_articles: false
+          fetch_images: false
+          follow_meta_refresh: false
+          timeout: 30
+          max_threads: 2
+          language: "en"
+      rss:
+        enabled: true
+        feeds:
+          - https://rss.cnn.com/rss/edition.rss
+          - https://feeds.bbci.co.uk/news/rss.xml
+          - https://www.reutersagency.com/feed/?best-topics=world-news&post_type=best
+          - https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en
+      gdelt:
+        enabled: true
+      monitoring_targets:
+        sites:
+          - cnn.com
+          - bbc.com
+          - reuters.com
+          - apnews.com
+          - nytimes.com
+          - washingtonpost.com
+          - aljazeera.com
+        keywords:
+          - breaking
+          - emergency
+          - crisis
+          - disaster
+          - protest
+          - election
+          - summit
+          - trending
+      rate_limits:
+        requests_per_minute: 10
+        delay_between_requests: 6
+      compliance:
+        only_public_data: true
+        no_automated_login: true
+        metadata_only: true
+        respect_rate_limits: true
+    kafka:
+      topics:
+        articles: "raw.news.articles"
+        events: "raw.news.events"
+        metadata: "raw.news.metadata"
+      batch_size: 1000
+      compression: snappy
+    monitoring:
+      metrics_port: 8080
+      health_check_interval: 30
+      compliance_monitoring: true
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: news-ingestion-monitor
+  namespace: monitoring
+spec:
+  selector:
+    matchLabels:
+      app: news-ingestion
+  endpoints:
+  - port: metrics
+    interval: 30s
+    path: /metrics
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: news-ingestion-hpa
+  namespace: osin-production
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: news-ingestion
+  minReplicas: 1
+  maxReplicas: 4
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 70
+  - type: Resource
+    resource:
+      name: memory
+      target:
+        type: Utilization
+        averageUtilization: 80
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+      - type: Percent
+        value: 100
+        periodSeconds: 15

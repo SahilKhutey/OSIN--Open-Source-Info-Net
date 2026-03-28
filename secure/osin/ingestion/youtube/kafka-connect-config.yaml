@@ -1,0 +1,65 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: youtube-source-connector
+  labels:
+    strimzi.io/cluster: youtube-connect-cluster
+spec:
+  class: com.example.YouTubeSourceConnector
+  tasksMax: 2
+  config:
+    # YouTube API Configuration
+    youtube.api.key: "${YOUTUBE_API_KEY}"
+    youtube.api.quota.units: 10000
+    
+    # Content Configuration
+    youtube.content.types: "trending,search,channel"
+    youtube.search.queries: "breaking news,emergency,crisis,disaster"
+    youtube.monitored.channels: "${MONITORED_CHANNELS}"
+    
+    # Kafka Configuration
+    topic.prefix: "youtube."
+    kafka.topic.creation.enable: true
+    
+    # Data Processing
+    batch.size: 50
+    max.pending.records: 1000
+    youtube.request.timeout.ms: 30000
+    
+    # Error Handling
+    errors.tolerance: "all"
+    errors.log.enable: true
+    errors.retry.timeout.ms: 300000
+    
+    # Data Format
+    key.converter: "org.apache.kafka.connect.json.JsonConverter"
+    value.converter: "org.apache.kafka.connect.json.JsonConverter"
+    key.converter.schemas.enable: false
+    value.converter.schemas.enable: false
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: youtube-connector-config
+  namespace: osin-production
+data:
+  connector.properties: |
+    # YouTube Data API v3 configuration
+    youtube.api.version=v3
+    youtube.part=snippet,statistics,contentDetails
+    
+    # Content filtering
+    youtube.content.filter=standard
+    youtube.region.code=US
+    youtube.max.results=50
+    
+    # Monitoring configuration
+    youtube.metrics.interval.ms=60000
+    youtube.health.check.interval.ms=30000
+    
+    # Performance tuning
+    youtube.connection.timeout.ms=30000
+    youtube.read.timeout.ms=60000
+    youtube.max.retries=5
+    youtube.retry.backoff.ms=1000

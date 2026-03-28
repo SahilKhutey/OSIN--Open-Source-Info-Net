@@ -1,0 +1,10 @@
+kafka-python
+snscrape
+pyyaml
+asyncio
+praw
+flask
+google-api-python-client
+feedparser
+requests
+prometheus_client

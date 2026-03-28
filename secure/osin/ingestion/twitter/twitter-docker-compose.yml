@@ -1,0 +1,33 @@
+version: '3.8'
+
+services:
+  twitter-snscrape:
+    build: 
+      context: ../../../
+      dockerfile: secure/osin/ingestion/twitter/Dockerfile.snscrape
+    environment:
+      KAFKA_BROKERS: kafka:9092
+      SEARCH_QUERIES: "breaking news,emergency,crisis,disaster"
+    depends_on:
+      - kafka
+  
+  twitter-api:
+    build: 
+      context: ../../../
+      dockerfile: secure/osin/ingestion/twitter/Dockerfile.api
+    environment:
+      KAFKA_BROKERS: kafka:9092
+      BEARER_TOKEN: ${TWITTER_BEARER_TOKEN}
+    depends_on:
+      - kafka
+  
+  kafka-connect-twitter:
+    image: jcustenborder/kafka-connect-twitter:latest
+    environment:
+      CONSUMER_KEY: ${TWITTER_CONSUMER_KEY}
+      CONSUMER_SECRET: ${TWITTER_CONSUMER_SECRET}
+      ACCESS_TOKEN: ${TWITTER_ACCESS_TOKEN}
+      ACCESS_TOKEN_SECRET: ${TWITTER_ACCESS_TOKEN_SECRET}
+    depends_on:
+      - kafka
+      - schema-registry

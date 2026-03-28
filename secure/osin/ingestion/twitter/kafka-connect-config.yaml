@@ -1,0 +1,73 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: twitter-source-connector
+  labels:
+    strimzi.io/cluster: twitter-connect-cluster
+spec:
+  class: com.github.jcustenborder.kafka.connect.twitter.TwitterSourceConnector
+  tasksMax: 3
+  config:
+    # Twitter API Configuration
+    twitter.oauth.consumerKey: "${TWITTER_CONSUMER_KEY}"
+    twitter.oauth.consumerSecret: "${TWITTER_CONSUMER_SECRET}"
+    twitter.oauth.accessToken: "${TWITTER_ACCESS_TOKEN}"
+    twitter.oauth.accessTokenSecret: "${TWITTER_ACCESS_TOKEN_SECRET}"
+    
+    # Kafka Configuration
+    topic: "raw.twitter.posts"
+    kafka.status.interval.ms: 10000
+    
+    # Filter Configuration
+    filter.keywords: "breaking,news,emergency,crisis,disaster,protest,election"
+    process.deletes: false
+    
+    # Performance Tuning
+    batch.size: 1000
+    batch.timeout.ms: 5000
+    buffer.memory: 33554432
+    linger.ms: 100
+    
+    # Error Handling
+    max.retries: 10
+    retry.backoff.ms: 1000
+    max.block.ms: 60000
+    
+    # Data Format
+    key.converter: "org.apache.kafka.connect.json.JsonConverter"
+    value.converter: "org.apache.kafka.connect.json.JsonConverter"
+    key.converter.schemas.enable: false
+    value.converter.schemas.enable: false
+
+---
+# Alternative: Twitter API v2 Connector
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: twitter-v2-connector
+spec:
+  class: "com.github.adam-crowther.kafka.connect.twitter.v2.TwitterSourceConnector"
+  tasksMax: 2
+  config:
+    # Twitter API v2 Configuration
+    twitter.bearer.token: "${TWITTER_BEARER_TOKEN}"
+    twitter.api.v2.enabled: true
+    
+    # Search Parameters
+    twitter.search.query: "(breaking OR emergency OR crisis) -is:retweet"
+    twitter.search.max.results: 100
+    twitter.search.tweet.fields: "created_at,public_metrics,context_annotations,author_id"
+    
+    # Streaming Configuration
+    twitter.stream.enabled: true
+    twitter.stream.rules: 
+      - value: "breaking news"
+      - value: "emergency"
+      - value: "crisis"
+    
+    # Kafka Topics
+    topic.prefix: "twitter.v2."
+    
+    # Rate Limiting
+    twitter.rate.limit.requests: 300
+    twitter.rate.limit.window.minutes: 15

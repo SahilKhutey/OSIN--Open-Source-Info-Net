@@ -1,0 +1,39 @@
+apiVersion: kafka.strimzi.io/v1beta2
+kind: KafkaConnector
+metadata:
+  name: reddit-source-connector
+  labels:
+    strimzi.io/cluster: reddit-connect-cluster
+spec:
+  class: io.github.c0urante.kafka.connect.reddit.RedditSourceConnector
+  tasksMax: 2
+  config:
+    # Reddit API Configuration
+    reddit.client.id: "${REDDIT_CLIENT_ID}"
+    reddit.client.secret: "${REDDIT_CLIENT_SECRET}"
+    reddit.username: "${REDDIT_USERNAME}"
+    reddit.password: "${REDDIT_PASSWORD}"
+    
+    # Subreddit Configuration
+    reddit.subreddits: "worldnews,news,politics,economics,technology,science"
+    reddit.post.types: "hot,new,rising,top"
+    
+    # Kafka Configuration
+    topic.prefix: "reddit."
+    kafka.topic.creation.enable: true
+    
+    # Data Processing
+    batch.size: 100
+    max.poll.records: 500
+    reddit.request.timeout.ms: 30000
+    
+    # Error Handling
+    errors.tolerance: "all"
+    errors.log.enable: true
+    errors.log.include.messages: true
+    
+    # Data Format
+    key.converter: "org.apache.kafka.connect.json.JsonConverter"
+    value.converter: "org.apache.kafka.connect.json.JsonConverter"
+    key.converter.schemas.enable: false
+    value.converter.schemas.enable: false

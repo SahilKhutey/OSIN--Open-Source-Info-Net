@@ -1,0 +1,61 @@
+# OSIN Privacy-First Deployment Configuration
+# Classification: SENSITIVE | Requirement: HYBRID_PRIVACY
+
+privacy:
+  enabled: true
+  default_level: "ENHANCED"
+  
+  anonymous_gateway:
+    session_ttl_seconds: 3600
+    max_sessions: 10000
+    cookie_policy: "NONE"
+    fingerprinting: "ANONYMOUS"
+  
+  proxy_network:
+    enabled: true
+    routing_strategy: "PRIVACY_AWARE"
+    node_types:
+      - type: "residential"
+        count: 10
+        regions: ["us-east", "eu-west", "asia-southeast"]
+      - type: "vpn"
+        count: 5
+      - type: "tor"
+        enabled: false # Optional layer
+  
+  distributed_ingestion:
+    enabled: true
+    load_balancing: "PRIVACY_AWARE"
+    failover_strategy: "GEOGRAPHIC"
+  
+  data_obfuscation:
+    enabled: true
+    differential_privacy:
+      enabled: true
+      default_epsilon: 1.0
+      mechanism: "LAPLACE"
+    policies:
+      - name: "user_strict"
+        fields:
+          ip_address: "HASH_SALTED"
+          location: "CITY_LEVEL"
+          phone: "REMOVE"
+  
+  monitoring:
+    enabled: true
+    metrics_collection: "ANONYMIZED"
+    compliance_checks:
+      - check: "DATA_MINIMIZATION"
+        interval: "HOURLY"
+
+security:
+  encryption:
+    transport: "TLS_1.3"
+    at_rest: "AES_256_GCM"
+  authentication: "ANONYMOUS"
+
+compliance:
+  gdpr:
+    enabled: true
+    data_processing: "ANONYMIZED"
+  anonymous_operation: true

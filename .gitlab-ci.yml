@@ -1,0 +1,42 @@
+stages:
+  - security
+  - build
+  - test
+  - deploy
+
+variables:
+  DOCKER_HOST: "tcp://docker:2375"
+  DOCKER_TLS_CERTDIR: ""
+
+security_scan:
+  stage: security
+  image: aquasec/trivy:latest
+  script:
+    - trivy filesystem --severity HIGH,CRITICAL --exit-code 1 /
+  only:
+    - merge_requests
+
+build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - docker build -t osin-core:$CI_COMMIT_SHA .
+    - docker tag osin-core:$CI_COMMIT_SHA $CI_REGISTRY/osin/core:$CI_COMMIT_SHA
+    - docker push $CI_REGISTRY/osin/core:$CI_COMMIT_SHA
+
+deploy_staging:
+  stage: deploy
+  image: docker:latest
+  services:
+    - docker:dind
+  script:
+    - echo "$KUBECONFIG" | base64 -d > kubeconfig
+    - export KUBECONFIG=kubeconfig
+    - kubectl set image deployment/osin-core osin-core=$CI_REGISTRY/osin/core:$CI_COMMIT_SHA
+  environment:
+    name: staging
+    url: https://staging.osin.intel
+  only:
+    - main

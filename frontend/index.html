@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSIN | Global Intelligence Engine</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <meta name="description" content="Production-grade real-time global intelligence engine for signal extraction and trend detection.">
+</head>
+<body>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <nav class="glass-header">
+        <div class="logo">
+            <span class="gradient-text">OSIN</span>
+            <span class="sub-logo">Info Net</span>
+        </div>
+        <div class="status-indicator">
+            <div class="pulse"></div>
+            <span>System Online: Global Extraction Active</span>
+        </div>
+    </nav>
+
+    <main class="dashboard tactical-view">
+        <div class="scanline"></div>
+        <section class="overview-grid">
+            <div class="glass-card stat-card threat-monitor">
+                <h3>Battlefield Situation</h3>
+                <div class="threat-indicator" id="current-threat">GREEN</div>
+                <div class="threat-status" id="threat-desc">Routine monitoring</div>
+                <div class="opsec-status" id="opsec-protocol">Protocol: STABLE</div>
+            </div>
+            <div class="glass-grid">
+                <div class="glass-card stat-card mini">
+                    <h3>Conflict Forecast</h3>
+                    <div class="value" id="forecast-hotspots">02 Active</div>
+                </div>
+                <div class="glass-card stat-card mini">
+                    <h3>Counter-Intel</h3>
+                    <div class="value" id="hostile-monitoring">Normal</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="main-content">
+            <div class="glass-card signals-feed tactical">
+                <div class="card-header">
+                    <h2>Combat-Ready Intelligence Feed</h2>
+                    <div class="feed-filters">
+                        <button class="filter-btn active">Live</button>
+                        <button class="filter-btn">Verified</button>
+                    </div>
+                </div>
+                <div class="feed-container" id="signals-container">
+                    <!-- Signals populated by JS -->
+                </div>
+            </div>
+
+            <div class="side-panel">
+                <div class="glass-card predictive-panel">
+                    <h2>Intelligence Forecasting</h2>
+                    <ul class="prediction-list" id="prediction-list">
+                        <!-- Predictions populated by JS -->
+                    </ul>
+                </div>
+                <div class="glass-card multi-domain-hud">
+                    <h2>Multi-Domain Fusion</h2>
+                    <div class="hud-metrics">
+                        <div class="metric"><span>SAT-IMG:</span> <span id="sat-status">ACTIVE</span></div>
+                        <div class="metric"><span>SIGINT:</span> <span id="sigint-status">SCANNING</span></div>
+                        <div class="metric"><span>LINGUA:</span> <span id="lingua-status">ONLINE</span></div>
+                    </div>
+                </div>
+                <div class="glass-card action-console">
+                    <h2>Action Console</h2>
+                    <div class="action-grid">
+                        <button class="action-btn" onclick="triggerGhost()">GHOST Mode</button>
+                        <button class="action-btn warn" onclick="triggerPhantom()">PHANTOM Protocol</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Detailed Credibility Modal -->
+    <div id="credibility-modal" class="modal">
+        <div class="glass-card modal-content">
+            <span class="close-btn">&times;</span>
+            <h2>Credibility Breakdown</h2>
+            <div id="breakdown-container"></div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>

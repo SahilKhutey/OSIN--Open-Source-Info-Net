@@ -1,0 +1,22 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: twitter-ingestion-config
+  namespace: osin-production
+data:
+  ingestion.yaml: |
+    twitter:
+      snscrape:
+        enabled: true
+        max_tweets_per_query: 1000
+        query_rotation_interval: 3600
+      api:
+        enabled: true
+        max_requests_per_hour: 300
+    kafka:
+      topic: "raw.twitter.posts"
+      batch_size: 1000
+      compression_type: "snappy"
+    monitoring:
+      metrics_port: 8080
+      health_check_interval: 30

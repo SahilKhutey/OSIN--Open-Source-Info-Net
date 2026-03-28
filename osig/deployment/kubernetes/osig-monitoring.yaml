@@ -1,0 +1,72 @@
+# Istio Service Mesh Gateway
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: osig-gateway
+  namespace: osig-production
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - port: {number: 443, name: https, protocol: HTTPS}
+    tls: {mode: SIMPLE, credentialName: osig-tls-cert}
+    hosts: ["osig.intel", "dashboard.osig.intel", "api.osig.intel"]
+
+---
+# Frontend VirtualService
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: osig-frontend
+  namespace: osig-production
+spec:
+  hosts: ["dashboard.osig.intel"]
+  gateways: ["osig-gateway"]
+  http:
+  - match: [{uri: {prefix: "/"}}]
+    route: [{destination: {host: "osig-frontend", port: {number: 80}}}]
+    timeout: 30s
+    corsPolicy:
+      allowOrigins: [{exact: "*"}]
+      allowMethods: ["GET", "POST", "OPTIONS"]
+
+---
+# Prometheus Monitoring
+apiVersion: monitoring.coreos.com/v1
+kind: Prometheus
+metadata:
+  name: osig-prometheus
+  namespace: monitoring
+spec:
+  replicas: 2
+  resources:
+    requests: {memory: "16Gi", cpu: "4"}
+  storage:
+    volumeClaimTemplate:
+      spec:
+        storageClassName: encrypted-ssd
+        resources: {requests: {storage: "500Gi"}}
+
+---
+# Distributed Tracing (Jaeger)
+apiVersion: jaegertracing.io/v1
+kind: Jaeger
+metadata:
+  name: osig-jaeger
+  namespace: monitoring
+spec:
+  strategy: production
+  storage:
+    type: elasticsearch
+    options: {es: {server-urls: "http://elasticsearch.monitoring.svc.cluster.local:9200"}}
+
+---
+# Loki Logging Stack
+apiVersion: loki.grafana.com/v1
+kind: LokiStack
+metadata:
+  name: osig-loki
+  namespace: logging
+spec:
+  size: "1x.extra-large"
+  storageClassName: "encrypted-ssd"

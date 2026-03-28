@@ -1,0 +1,29 @@
+groups:
+- name: twitter-ingestion-alerts
+  rules:
+  - alert: TwitterIngestionDown
+    expr: up{job="twitter-ingestion"} == 0
+    for: 5m
+    labels:
+      severity: critical
+    annotations:
+      summary: "Twitter ingestion is down"
+      description: "Twitter ingestion has been down for more than 5 minutes"
+  
+  - alert: HighErrorRate
+    expr: rate(twitter_error_rate[5m]) > 0.1
+    for: 2m
+    labels:
+      severity: warning
+    annotations:
+      summary: "High Twitter error rate"
+      description: "Twitter ingestion error rate is above 10%"
+  
+  - alert: RateLimitExceeded
+    expr: twitter_rate_limit_remaining < 10
+    for: 1m
+    labels:
+      severity: warning
+    annotations:
+      summary: "Twitter rate limit low"
+      description: "Twitter API rate limit is running low"
