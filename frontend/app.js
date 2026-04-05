@@ -1,209 +1,286 @@
-// OSIN Dashboard Logic
+// OSIN Terminal Dashboard
+// Real-time intelligence signal ingestion and visualization
 
-const mockSignals = [
-    { 
-        id: 1, type: 'social', source: 'X / Twitter', content: 'Significant increase in trade volume detected in Southeast Asian markets.', time: '2m ago', 
-        credibility: 0.85, 
-        threat_level: 'YELLOW', combat_score: 0.78,
-        breakdown: { credibility: 0.9, occurrence: 0.8, reach: 0.7, proof_type: 0.8, coverage: 0.9, variance: 0.8, source_diversity: 0.85 }
-    },
-    { 
-        id: 2, type: 'news', source: 'Reuters', content: 'Global central banks indicate potential pivot in interest rate strategies.', time: '5m ago', 
-        credibility: 0.95,
-        threat_level: 'GREEN', combat_score: 0.92,
-        breakdown: { credibility: 1.0, occurrence: 0.9, reach: 0.9, proof_type: 1.0, coverage: 0.95, variance: 0.9, source_diversity: 0.92 }
-    }
-];
-
-const mockTrends = [
-    { keyword: '#QuantumLeap', score: 9.4, platforms: ['X', 'Reddit'] },
-    { keyword: 'MarketPivot', score: 8.2, platforms: ['NewsAPI', 'X'] },
-    { keyword: 'OSIN_v1', score: 7.9, platforms: ['GDELT', 'YouTube'] }
-];
-
-function initDashboard() {
-    renderSignals(mockSignals);
-    renderTrends(mockTrends);
-    renderHeatmap();
-    setupModal();
-    startLiveSimulation();
-}
-
-function renderHeatmap() {
-    const grid = document.querySelector('.heatmap-grid');
-    grid.innerHTML = Array(200).fill(0).map(() => `
-        <div class="heat-cell ${Math.random() > 0.95 ? 'hot' : ''}"></div>
-    `).join('');
-}
-
-function renderSignals(signals) {
-    const container = document.getElementById('signals-container');
-    container.innerHTML = signals.map(sig => `
-        <div class="signal-item" onclick="showBreakdown(${sig.id})">
-            <div class="signal-header">
-                <span class="signal-tag tag-${sig.type}">${sig.type}</span>
-                <span class="source-name">${sig.source}</span>
-                <span class="combat-badge" style="color: ${sig.combat_score > 0.8 ? '#10b981' : '#94a3b8'}">Combat: ${(sig.combat_score * 100).toFixed(0)}</span>
-            </div>
-            <div class="signal-content">${sig.content}</div>
-            <div class="signal-footer">
-                <span class="signal-time">${sig.time}</span>
-                <span class="signal-cred">Credibility: ${(sig.credibility * 100).toFixed(0)}%</span>
-                <span class="threat-badge threat-${sig.threat_level}" style="font-size: 0.7rem; margin-left: auto; font-weight: bold;">${sig.threat_level}</span>
-            </div>
-        </div>
-    `).join('');
-    
-    updateThreatLevel(signals[0]?.threat_level || 'GREEN');
-}
-
-function updateThreatLevel(level) {
-    const indicator = document.getElementById('current-threat');
-    const desc = document.getElementById('threat-desc');
-    
-    if (!indicator) return;
-    
-    indicator.textContent = level;
-    indicator.className = `threat-indicator threat-${level}`;
-    
-    const descriptions = {
-        'GREEN': 'Routine monitoring',
-        'YELLOW': 'Elevated interest', 
-        'ORANGE': 'Potential threat',
-        'RED': 'Active situation',
-        'BLACK': 'Critical emergency'
-    };
-    desc.textContent = descriptions[level] || 'Initializing...';
-}
-
-function renderTrends(trends) {
-    const list = document.getElementById('trends-list');
-    list.innerHTML = trends.map(tr => `
-        <li class="trend-item">
-            <div>
-                <div class="trend-keyword">${tr.keyword}</div>
-                <div style="font-size: 0.7rem; color: #94a3b8;">${tr.platforms.join(' • ')}</div>
-            </div>
-            <span class="trend-score">${tr.score}</span>
-        </li>
-    `).join('');
-}
-
-function setupModal() {
-    const modal = document.getElementById('credibility-modal');
-    const closeBtn = document.querySelector('.close-btn');
-    closeBtn.onclick = () => modal.style.display = "none";
-    window.onclick = (event) => {
-        if (event.target == modal) modal.style.display = "none";
-    }
-}
-
-window.showBreakdown = function(id) {
-    const sig = [...mockSignals].find(s => s.id === id);
-    if (!sig) return;
-    
-    const container = document.getElementById('breakdown-container');
-    const modal = document.getElementById('credibility-modal');
-    
-    container.innerHTML = Object.entries(sig.breakdown).map(([key, val]) => `
-        <div class="breakdown-row">
-            <div style="text-transform: capitalize;">${key.replace('_', ' ')}</div>
-            <div style="width: 200px;">
-                <div style="display: flex; justify-content: space-between; font-size: 0.8rem;">
-                    <span>${(val * 100).toFixed(0)}%</span>
-                </div>
-                <div class="progress-bar"><div class="progress" style="width: ${val * 100}%"></div></div>
-            </div>
-        </div>
-    `).join('');
-    
-    modal.style.display = "block";
-}
-
-function startLiveSimulation() {
-    setInterval(() => {
-        const types = ['GREEN', 'YELLOW', 'ORANGE', 'RED'];
-        const randomLevel = types[Math.floor(Math.random() * types.length)];
-        
-        const newSig = {
-            id: Date.now(),
-            type: Math.random() > 0.5 ? 'social' : 'news',
-            source: 'OSIN Node ' + Math.floor(Math.random() * 10),
-            content: randomLevel === 'RED' ? 'CRITICAL SIGNAL: Potential threat detected in global communications.' : 'Real-time alert: Intelligence signal extracted for monitoring.',
-            time: 'Just now',
-            credibility: (Math.random() * 0.4 + 0.6).toFixed(2),
-            threat_level: randomLevel,
-            combat_score: (Math.random() * 0.3 + 0.6).toFixed(2),
-            breakdown: { credibility: 0.7, occurrence: 0.8, reach: 0.6, proof_type: 0.7, coverage: 0.8, variance: 0.7, source_diversity: 0.75 }
+class OSINTerminal {
+    constructor() {
+        this.signals = [];
+        this.trends = [];
+        this.sourceCount = {
+            'Twitter': 0,
+            'Reddit': 0,
+            'YouTube': 0,
+            'News': 0,
+            'Instagram': 0,
+            'LinkedIn': 0
         };
+        this.threatLevel = 'GREEN';
+        this.startTime = Date.now();
+        this.signalCount = 0;
+        this.ingestionRate = 0;
         
-        mockSignals.unshift(newSig);
-        renderSignals(mockSignals.slice(0, 10));
-        renderHeatmap(); // Update heatmap dots
-    }, 15000);
-}
-
-function initDashboard() {
-    renderSignals(mockSignals);
-    renderTrends(mockTrends);
-    renderHeatmap();
-    renderPredictions();
-    setupModal();
-    startLiveSimulation();
-    startCounterIntelMonitor();
-}
-
-function renderPredictions() {
-    const list = document.getElementById('prediction-list');
-    const predictions = [
-        { zone: "Region Alpha-9", confidence: 88, risk: "High Escalation" },
-        { zone: "Sector Gamma-12", confidence: 76, risk: "Social Unrest" }
-    ];
-    
-    list.innerHTML = predictions.map(p => `
-        <li class="prediction-item">
-            <div>${p.zone} [${p.confidence}%]</div>
-            <span>Type: ${p.risk}</span>
-        </li>
-    `).join('');
-}
-
-window.triggerGhost = function() {
-    const protocol = document.getElementById('opsec-protocol');
-    protocol.textContent = "Protocol: GHOST (Tor Active)";
-    protocol.style.color = "#00ff41";
-    alert("OSIN Layer: Protocol GHOST Initialized. Routing through Tor-over-VPN.");
-}
-
-window.triggerPhantom = function() {
-    if (confirm("CRITICAL: Initiate Protocol PHANTOM? This will wipe all ephemeral node data.")) {
-        document.body.style.filter = "grayscale(1) contrast(2)";
-        alert("PROTOCOL PHANTOM: Data purge complete. Node self-destructing...");
-        window.location.reload();
+        this.initTerminal();
     }
-}
 
-function startCounterIntelMonitor() {
-    setInterval(() => {
-        const status = document.getElementById('hostile-monitoring');
-        const random = Math.random();
-        
-        // Hostile monitoring telemetry
-        if (random > 0.95) {
-            status.textContent = "SUSPICIOUS";
-            status.style.color = "#ef4444";
+    initTerminal() {
+        this.updateLiveTime();
+        this.loadMockData();
+        this.startSignalStream();
+        setInterval(() => this.updateLiveTime(), 1000);
+        setInterval(() => this.updateIngestionRate(), 1000);
+    }
+
+    loadMockData() {
+        const mockSignals = [
+            { 
+                id: 1, 
+                source: 'Twitter', 
+                content: 'Market volatility detected in Asian trading sessions', 
+                timestamp: new Date(Date.now() - 30000),
+                credibility: 0.88,
+                threatLevel: 'GREEN'
+            },
+            { 
+                id: 2, 
+                source: 'News', 
+                content: 'Central banks signal policy adjustments ahead', 
+                timestamp: new Date(Date.now() - 60000),
+                credibility: 0.92,
+                threatLevel: 'GREEN'
+            },
+            { 
+                id: 3, 
+                source: 'Reddit', 
+                content: 'Technology sector trending: AI adoption acceleration', 
+                timestamp: new Date(Date.now() - 90000),
+                credibility: 0.75,
+                threatLevel: 'YELLOW'
+            },
+            { 
+                id: 4, 
+                source: 'YouTube', 
+                content: 'Geopolitical analysis: Regional tensions overview', 
+                timestamp: new Date(Date.now() - 120000),
+                credibility: 0.80,
+                threatLevel: 'GREEN'
+            }
+        ];
+
+        this.trends = [
+            { keyword: '#QuantumComputing', score: 9.2, platforms: ['Twitter', 'Reddit'] },
+            { keyword: '#ClimateAction', score: 8.5, platforms: ['News', 'Instagram'] },
+            { keyword: '#TechInnovation', score: 8.1, platforms: ['YouTube', 'LinkedIn'] },
+            { keyword: '#GlobalTrade', score: 7.8, platforms: ['News', 'Twitter'] },
+            { keyword: '#DataPrivacy', score: 7.4, platforms: ['Reddit', 'LinkedIn'] }
+        ];
+
+        this.signals = mockSignals;
+        this.signalCount = mockSignals.length;
+        this.renderSignals();
+        this.updateTrends();
+        this.updateSourceMetrics();
+        this.updateThreatLevel();
+    }
+
+    startSignalStream() {
+        setInterval(() => {
+            const sources = ['Twitter', 'Reddit', 'YouTube', 'News', 'Instagram', 'LinkedIn'];
+            const contents = [
+                'Market sentiment shift detected in real-time feeds',
+                'Breaking: International policy announcement incoming',
+                'Trending topic surge across multiple platforms',
+                'Emerging pattern in social media discussions',
+                'Data anomaly detected in signal correlation',
+                'Cross-platform signal validation in progress',
+                'Intelligence gap identified - requires analysis',
+                'High-confidence signal extracted and confirmed'
+            ];
+            const threatLevels = ['GREEN', 'GREEN', 'GREEN', 'YELLOW', 'YELLOW'];
+
+            const newSignal = {
+                id: this.signals.length + 1,
+                source: sources[Math.floor(Math.random() * sources.length)],
+                content: contents[Math.floor(Math.random() * contents.length)],
+                timestamp: new Date(),
+                credibility: (Math.random() * 0.35 + 0.65).toFixed(2),
+                threatLevel: threatLevels[Math.floor(Math.random() * threatLevels.length)]
+            };
+
+            this.signals.unshift(newSignal);
+            if (this.signals.length > 20) this.signals.pop();
+            this.signalCount++;
+            this.ingestionRate++;
+
+            this.sourceCount[newSignal.source]++;
+            this.renderSignals();
+            this.updateSourceMetrics();
+            this.updateThreatLevel();
+
+        }, 3000 + Math.random() * 2000);
+    }
+
+    renderSignals() {
+        const feedContainer = document.getElementById('signal-feed');
+        const signalCountEl = document.getElementById('signal-count');
+
+        signalCountEl.textContent = this.signalCount;
+
+        feedContainer.innerHTML = this.signals.map(sig => `
+            <div class="signal-item" onclick="terminal.showSignalDetails(${sig.id})">
+                <span class="signal-source">[${sig.source.toUpperCase()}]</span>
+                <span class="signal-content">${sig.content}</span>
+                <div style="display: flex; justify-content: space-between; margin-top: 3px;">
+                    <span class="signal-time">${this.formatTime(sig.timestamp)}</span>
+                    <span style="color: var(--terminal-amber);">Cred: ${(sig.credibility * 100).toFixed(0)}%</span>
+                </div>
+            </div>
+        `).join('');
+
+        if (this.signals.length === 0) {
+            feedContainer.innerHTML = '<div class="terminal-line">> AWAITING SIGNAL STREAM...</div>';
+        }
+    }
+
+    updateTrends() {
+        const trendsContainer = document.getElementById('trends-container');
+        trendsContainer.innerHTML = this.trends.map(tr => `
+            <div class="trend-item">
+                <span class="trend-keyword">${tr.keyword}</span>
+                <span class="trend-score">${tr.score.toFixed(1)}</span>
+            </div>
+        `).join('');
+    }
+
+    updateSourceMetrics() {
+        Object.keys(this.sourceCount).forEach(source => {
+            const el = document.getElementById(source.toLowerCase() + '-count');
+            if (el) el.textContent = this.sourceCount[source];
+        });
+    }
+
+    updateThreatLevel() {
+        const threatsCount = this.signals.filter(s => s.threatLevel === 'RED').length;
+        const yellowCount = this.signals.filter(s => s.threatLevel === 'YELLOW').length;
+
+        if (threatsCount > 0) {
+            this.threatLevel = 'RED';
+        } else if (yellowCount > 1) {
+            this.threatLevel = 'YELLOW';
         } else {
-            status.textContent = "Normal";
-            status.style.color = "#00ff41";
+            this.threatLevel = 'GREEN';
         }
 
-        // Multi-domain HUD telemetry
-        document.getElementById('sat-status').textContent = random > 0.2 ? 'ACQUIRED' : 'SCANNING';
-        document.getElementById('sigint-status').textContent = random > 0.5 ? 'BEARING FOUND' : 'INTERCEPTING';
-        document.getElementById('lingua-status').textContent = 'TRANSLATING';
-        
-    }, 10000);
+        const threatBar = document.getElementById('threat-level-bar');
+        const threatValue = document.getElementById('threat-value');
+        const threatStatus = document.getElementById('threat-status');
+
+        const threatLevels = { 'GREEN': 25, 'YELLOW': 60, 'RED': 100 };
+        threatBar.style.width = threatLevels[this.threatLevel] + '%';
+        threatBar.className = 'threat-level ' + this.threatLevel.toLowerCase();
+
+        threatValue.textContent = this.threatLevel;
+        threatValue.className = 'value threat-val ' + this.threatLevel.toLowerCase();
+
+        const statusMap = {
+            'GREEN': 'Routine monitoring in progress',
+            'YELLOW': 'Elevated signal activity detected',
+            'RED': 'Critical threat detected - escalation required'
+        };
+        threatStatus.textContent = statusMap[this.threatLevel];
+    }
+
+    showSignalDetails(signalId) {
+        const signal = this.signals.find(s => s.id === signalId);
+        if (!signal) return;
+
+        const modalBody = document.getElementById('modal-body');
+        const breakdown = {
+            credibility: parseFloat(signal.credibility),
+            frequency: (Math.random() * 0.3 + 0.7).toFixed(2),
+            reach: (Math.random() * 0.3 + 0.6).toFixed(2),
+            sourceQuality: (Math.random() * 0.3 + 0.75).toFixed(2),
+            timelinessScore: (Math.random() * 0.3 + 0.8).toFixed(2)
+        };
+
+        modalBody.innerHTML = `
+            <div class="detail-row">
+                <span class="label">SOURCE:</span>
+                <span class="value">${signal.source}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">TIMESTAMP:</span>
+                <span class="value">${signal.timestamp.toLocaleString()}</span>
+            </div>
+            <div class="detail-row">
+                <span class="label">THREAT LEVEL:</span>
+                <span class="value">${signal.threatLevel}</span>
+            </div>
+            <div style="margin: 10px 0; border-top: 1px dashed rgba(0, 255, 65, 0.3); padding-top: 10px;">
+                <span style="color: var(--terminal-green); font-weight: bold;">CREDIBILITY BREAKDOWN:</span>
+            </div>
+            ${Object.entries(breakdown).map(([key, value]) => `
+                <div class="detail-row">
+                    <span class="label">${key.replace(/([A-Z])/g, ' $1').toUpperCase()}:</span>
+                    <span class="value">${(value * 100).toFixed(0)}%</span>
+                </div>
+            `).join('')}
+        `;
+
+        const modal = document.getElementById('signal-modal');
+        modal.classList.add('active');
+    }
+
+    updateLiveTime() {
+        const timeEl = document.querySelector('.timestamp');
+        if (timeEl) {
+            const now = new Date();
+            timeEl.textContent = now.toLocaleString();
+        }
+    }
+
+    updateIngestionRate() {
+        const rateEl = document.getElementById('ingestion-rate');
+        if (rateEl) {
+            rateEl.textContent = this.ingestionRate;
+            this.ingestionRate = 0;
+        }
+
+        const uptimeEl = document.getElementById('uptime');
+        if (uptimeEl) {
+            const elapsed = Date.now() - this.startTime;
+            const hours = Math.floor(elapsed / 3600000);
+            const minutes = Math.floor((elapsed % 3600000) / 60000);
+            const seconds = Math.floor((elapsed % 60000) / 1000);
+            uptimeEl.textContent = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+        }
+    }
+
+    formatTime(date) {
+        const now = new Date();
+        const diff = now - date;
+        const minutes = Math.floor(diff / 60000);
+        const seconds = Math.floor((diff % 60000) / 1000);
+
+        if (minutes > 0) return `${minutes}m ago`;
+        return `${seconds}s ago`;
+    }
 }
 
-document.addEventListener('DOMContentLoaded', initDashboard);
+// Initialize terminal
+let terminal;
+document.addEventListener('DOMContentLoaded', () => {
+    terminal = new OSINTerminal();
+});
+
+// Modal handling
+function closeModal() {
+    const modal = document.getElementById('signal-modal');
+    modal.classList.remove('active');
+}
+
+window.onclick = (event) => {
+    const modal = document.getElementById('signal-modal');
+    if (event.target === modal) {
+        modal.classList.remove('active');
+    }
+};
 

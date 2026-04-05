@@ -7,94 +7,129 @@
     <link rel="stylesheet" href="style.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
     <meta name="description" content="Production-grade real-time global intelligence engine for signal extraction and trend detection.">
 </head>
 <body>
-    <div class="background-blobs">
-        <div class="blob blob-1"></div>
-        <div class="blob blob-2"></div>
-        <div class="blob blob-3"></div>
+    <!-- Terminal Background -->
+    <div class="terminal-background">
+        <div class="bg-scanlines"></div>
     </div>
 
-    <nav class="glass-header">
-        <div class="logo">
-            <span class="gradient-text">OSIN</span>
-            <span class="sub-logo">Info Net</span>
+    <!-- Header -->
+    <header class="terminal-header">
+        <div class="header-top">
+            <span class="system-label">[OSIN v1.0] - OPEN-SOURCE INTELLIGENCE NETWORK</span>
+            <span class="timestamp" id="live-time"></span>
         </div>
-        <div class="status-indicator">
-            <div class="pulse"></div>
-            <span>System Online: Global Extraction Active</span>
+        <div class="header-status">
+            <span class="status-badge online">● ONLINE</span>
+            <span class="status-badge">Ingestion Rate: <span id="ingestion-rate">0</span>/min</span>
+            <span class="status-badge">Uptime: <span id="uptime">00:00:00</span></span>
         </div>
-    </nav>
+    </header>
 
-    <main class="dashboard tactical-view">
-        <div class="scanline"></div>
-        <section class="overview-grid">
-            <div class="glass-card stat-card threat-monitor">
-                <h3>Battlefield Situation</h3>
-                <div class="threat-indicator" id="current-threat">GREEN</div>
-                <div class="threat-status" id="threat-desc">Routine monitoring</div>
-                <div class="opsec-status" id="opsec-protocol">Protocol: STABLE</div>
-            </div>
-            <div class="glass-grid">
-                <div class="glass-card stat-card mini">
-                    <h3>Conflict Forecast</h3>
-                    <div class="value" id="forecast-hotspots">02 Active</div>
+    <!-- Main Terminal -->
+    <main class="terminal-body">
+        <!-- Left Panel: Live Feed -->
+        <div class="left-panel">
+            <div class="terminal-section">
+                <div class="section-header">
+                    <span class="section-title">[LIVE INTELLIGENCE FEED]</span>
+                    <span class="signal-counter">Signals: <span id="signal-count">0</span></span>
                 </div>
-                <div class="glass-card stat-card mini">
-                    <h3>Counter-Intel</h3>
-                    <div class="value" id="hostile-monitoring">Normal</div>
-                </div>
-            </div>
-        </section>
-
-        <section class="main-content">
-            <div class="glass-card signals-feed tactical">
-                <div class="card-header">
-                    <h2>Combat-Ready Intelligence Feed</h2>
-                    <div class="feed-filters">
-                        <button class="filter-btn active">Live</button>
-                        <button class="filter-btn">Verified</button>
-                    </div>
-                </div>
-                <div class="feed-container" id="signals-container">
-                    <!-- Signals populated by JS -->
+                <div class="signal-feed" id="signal-feed">
+                    <div class="terminal-line">> AWAITING SIGNAL STREAM...</div>
                 </div>
             </div>
 
-            <div class="side-panel">
-                <div class="glass-card predictive-panel">
-                    <h2>Intelligence Forecasting</h2>
-                    <ul class="prediction-list" id="prediction-list">
-                        <!-- Predictions populated by JS -->
-                    </ul>
+            <div class="terminal-section">
+                <div class="section-header">
+                    <span class="section-title">[THREAT ASSESSMENT]</span>
                 </div>
-                <div class="glass-card multi-domain-hud">
-                    <h2>Multi-Domain Fusion</h2>
-                    <div class="hud-metrics">
-                        <div class="metric"><span>SAT-IMG:</span> <span id="sat-status">ACTIVE</span></div>
-                        <div class="metric"><span>SIGINT:</span> <span id="sigint-status">SCANNING</span></div>
-                        <div class="metric"><span>LINGUA:</span> <span id="lingua-status">ONLINE</span></div>
+                <div class="threat-display">
+                    <div class="threat-bar">
+                        <div class="threat-level" id="threat-level-bar"></div>
                     </div>
-                </div>
-                <div class="glass-card action-console">
-                    <h2>Action Console</h2>
-                    <div class="action-grid">
-                        <button class="action-btn" onclick="triggerGhost()">GHOST Mode</button>
-                        <button class="action-btn warn" onclick="triggerPhantom()">PHANTOM Protocol</button>
+                    <div class="threat-text">
+                        <span class="label">Level:</span> <span class="value threat-val" id="threat-value">GREEN</span>
+                    </div>
+                    <div class="threat-text">
+                        <span class="label">Status:</span> <span class="value" id="threat-status">Initializing...</span>
                     </div>
                 </div>
             </div>
-        </section>
+        </div>
+
+        <!-- Right Panel: Analytics -->
+        <div class="right-panel">
+            <div class="terminal-section">
+                <div class="section-header">
+                    <span class="section-title">[TRENDING KEYWORDS]</span>
+                </div>
+                <div class="trends-list" id="trends-container">
+                    <div class="terminal-line">> Loading trends...</div>
+                </div>
+            </div>
+
+            <div class="terminal-section">
+                <div class="section-header">
+                    <span class="section-title">[SOURCE DISTRIBUTION]</span>
+                </div>
+                <div class="source-metrics" id="source-metrics">
+                    <div class="metric-item">
+                        <span class="label">Twitter:</span> <span class="value" id="twitter-count">0</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="label">Reddit:</span> <span class="value" id="reddit-count">0</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="label">YouTube:</span> <span class="value" id="youtube-count">0</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="label">News:</span> <span class="value" id="news-count">0</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="label">Instagram:</span> <span class="value" id="instagram-count">0</span>
+                    </div>
+                    <div class="metric-item">
+                        <span class="label">LinkedIn:</span> <span class="value" id="linkedin-count">0</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="terminal-section">
+                <div class="section-header">
+                    <span class="section-title">[SYSTEM STATUS]</span>
+                </div>
+                <div class="status-list" id="system-status">
+                    <div class="status-item">
+                        <span class="indicator online">●</span> API: <span>CONNECTED</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="indicator online">●</span> Data Stream: <span>ACTIVE</span>
+                    </div>
+                    <div class="status-item">
+                        <span class="indicator online">●</span> Processing: <span>RUNNING</span>
+                    </div>
+                </div>
+            </div>
+        </div>
     </main>
 
-    <!-- Detailed Credibility Modal -->
-    <div id="credibility-modal" class="modal">
-        <div class="glass-card modal-content">
-            <span class="close-btn">&times;</span>
-            <h2>Credibility Breakdown</h2>
-            <div id="breakdown-container"></div>
+    <!-- Footer -->
+    <footer class="terminal-footer">
+        <span class="footer-text">> Ready for command input | Type 'help' for options | Press F1 for documentation</span>
+    </footer>
+
+    <!-- Detail Modal -->
+    <div id="signal-modal" class="modal terminal-modal">
+        <div class="modal-content terminal-modal-content">
+            <div class="modal-header">
+                <span class="modal-title">[SIGNAL DETAILS]</span>
+                <span class="close-modal" onclick="closeModal()">[X]</span>
+            </div>
+            <div id="modal-body" class="modal-body"></div>
         </div>
     </div>
 
