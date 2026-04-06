@@ -8,18 +8,33 @@ const generateSampleEvent = (): IntelligenceEvent => {
   const lat = Math.random() * 180 - 90;
   const lng = Math.random() * 360 - 180;
 
+  const eventTemplates = [
+    'Intelligence report indicates unusual activity in the region',
+    'Social media monitoring detected spike in discussions',
+    'Automated system identified patterns matching threat indicators',
+    'News aggregation flagged significant developments',
+    'Real-time analysis suggests emerging trend',
+    'Cross-platform data correlation revealed connections',
+    'Event tracking system logged notable occurrence',
+    'Sentiment analysis indicates changing regional dynamics'
+  ];
+
+  const eventText = eventTemplates[Math.floor(Math.random() * eventTemplates.length)];
+
   return {
     id: `event-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
     timestamp: Date.now(),
     source: sources[Math.floor(Math.random() * sources.length)],
     type: 'intelligence',
     severity: severities[Math.floor(Math.random() * severities.length)],
-    content: `Intelligence report from ${Math.random() > 0.5 ? 'automated' : 'manual'} source`,
+    content: eventText,
+    text: eventText,
     platform: sources[Math.floor(Math.random() * sources.length)],
     confidence: Math.random() * 0.5 + 0.5,
     location: {
       lat,
       lng,
+      lon: lng,
       country: 'Sample Country',
       city: 'Sample City'
     }

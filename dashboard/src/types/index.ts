@@ -4,6 +4,7 @@ export type Severity = 'low' | 'medium' | 'high' | 'critical';
 export interface Location {
   lat: number;
   lng: number;
+  lon?: number;
   country?: string;
   city?: string;
 }
@@ -15,6 +16,7 @@ export interface IntelligenceEvent {
   type: string;
   severity: Severity;
   content: string;
+  text?: string;
   platform?: string;
   confidence?: number;
   location?: Location;
