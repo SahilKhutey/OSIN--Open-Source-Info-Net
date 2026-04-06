@@ -1,0 +1,158 @@
+/* HeatmapGlobe.css - Heatmap Visualization Styles */
+/* Cyberpunk Terminal Theme: Green (#00ff00) on Black (#000) */
+
+.heatmap-container {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  background-color: #000;
+  border: 1px solid #00ff00;
+}
+
+.heatmap-canvas {
+  width: 100%;
+  height: 100%;
+  display: block;
+  background: radial-gradient(circle at center, #001a00 0%, #000 100%);
+}
+
+.heatmap-overlay {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.heatmap-controls {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid #00ff00;
+  border-radius: 4px;
+  padding: 12px;
+  z-index: 20;
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+}
+
+.control-label {
+  color: #00ff00;
+  font-size: 12px;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  display: block;
+}
+
+.intensity-slider {
+  width: 150px;
+  height: 4px;
+  background: #00aa00;
+  border-radius: 2px;
+  outline: none;
+  -webkit-appearance: none;
+  appearance: none;
+  margin-bottom: 10px;
+}
+
+.intensity-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 14px;
+  height: 14px;
+  background: #00ff00;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(0, 255, 0, 0.8);
+}
+
+.intensity-slider::-moz-range-thumb {
+  width: 14px;
+  height: 14px;
+  background: #00ff00;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  box-shadow: 0 0 8px rgba(0, 255, 0, 0.8);
+}
+
+.heatmap-legend {
+  position: absolute;
+  bottom: 20px;
+  left: 20px;
+  background: rgba(0, 0, 0, 0.9);
+  border: 1px solid #00ff00;
+  border-radius: 4px;
+  padding: 12px;
+  z-index: 20;
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+}
+
+.legend-gradient-bar {
+  display: flex;
+  height: 20px;
+  margin-bottom: 10px;
+  border: 1px solid #00aa00;
+  border-radius: 2px;
+  overflow: hidden;
+  background: linear-gradient(to right,
+    #000033 0%,
+    #0000aa 25%,
+    #00ff00 50%,
+    #ffff00 75%,
+    #ff0000 100%);
+}
+
+.legend-range {
+  display: flex;
+  justify-content: space-between;
+  color: #00ff00;
+  font-size: 11px;
+  margin-top: 5px;
+}
+
+.low-indicator {
+  color: #0000aa;
+}
+
+.mid-indicator {
+  color: #00ff00;
+}
+
+.high-indicator {
+  color: #ff0000;
+}
+
+.heatmap-tooltip {
+  position: fixed;
+  background: rgba(0, 0, 0, 0.95);
+  border: 1px solid #00ff00;
+  border-radius: 4px;
+  padding: 8px 12px;
+  color: #00ff00;
+  font-size: 12px;
+  pointer-events: none;
+  z-index: 100;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.4);
+  white-space: nowrap;
+}
+
+.tooltip-value {
+  font-weight: bold;
+  text-shadow: 0 0 5px rgba(0, 255, 0, 0.6);
+}
+
+.heatmap-pulse {
+  animation: heatmap-pulse 2s ease-in-out infinite;
+}
+
+@keyframes heatmap-pulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(0, 255, 0, 0.4);
+  }
+}

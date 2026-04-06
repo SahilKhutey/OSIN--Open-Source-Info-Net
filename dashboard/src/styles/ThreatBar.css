@@ -1,0 +1,252 @@
+/* ThreatBar.css - Threat Level Indicator Styles */
+/* Cyberpunk Terminal Theme: Green (#00ff00) on Black (#000) */
+
+.threat-bar-container {
+  background-color: #000;
+  border: 1px solid #00ff00;
+  border-radius: 4px;
+  padding: 15px;
+  font-family: 'Courier New', monospace;
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+}
+
+.threat-header {
+  color: #00ff00;
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(0, 255, 0, 0.6);
+}
+
+.threat-level-display {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #00aa00;
+}
+
+.threat-label {
+  color: #00aa00;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.threat-value {
+  color: #00ff00;
+  font-size: 24px;
+  font-weight: bold;
+  text-shadow: 0 0 10px rgba(0, 255, 0, 0.8);
+}
+
+.threat-percentage {
+  color: #00aa00;
+  font-size: 12px;
+  margin-left: 5px;
+}
+
+.threat-meter {
+  position: relative;
+  height: 24px;
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid #00aa00;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-bottom: 12px;
+  box-shadow: inset 0 0 10px rgba(0, 255, 0, 0.1);
+}
+
+.threat-fill {
+  height: 100%;
+  background: linear-gradient(90deg,
+    #00ff00 0%,
+    #ffff00 40%,
+    #ff9900 70%,
+    #ff0000 100%);
+  width: 0%;
+  transition: width 0.8s ease;
+  box-shadow: 0 0 15px rgba(255, 0, 0, 0.8),
+              inset 0 0 10px rgba(255, 255, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+}
+
+.threat-fill-value {
+  color: #000;
+  font-size: 11px;
+  font-weight: bold;
+  text-shadow: 0 0 3px rgba(255, 255, 255, 0.5);
+}
+
+.threat-threshold {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  color: #00aa00;
+  margin-bottom: 15px;
+  opacity: 0.7;
+}
+
+.threshold-label {
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.threat-zones {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  margin-bottom: 15px;
+}
+
+.threat-zone {
+  background: rgba(0, 0, 0, 0.8);
+  border: 1px solid #00aa00;
+  border-radius: 4px;
+  padding: 10px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.threat-zone.safe {
+  border-color: #00ff00;
+}
+
+.threat-zone.safe:hover {
+  background: rgba(0, 255, 0, 0.1);
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.4);
+}
+
+.threat-zone.elevated {
+  border-color: #ffff00;
+}
+
+.threat-zone.elevated:hover {
+  background: rgba(255, 255, 0, 0.1);
+  box-shadow: 0 0 10px rgba(255, 255, 0, 0.4);
+}
+
+.threat-zone.high {
+  border-color: #ff9900;
+}
+
+.threat-zone.high:hover {
+  background: rgba(255, 153, 0, 0.1);
+  box-shadow: 0 0 10px rgba(255, 153, 0, 0.4);
+}
+
+.threat-zone.critical {
+  border-color: #ff0000;
+}
+
+.threat-zone.critical:hover {
+  background: rgba(255, 0, 0, 0.1);
+  box-shadow: 0 0 10px rgba(255, 0, 0, 0.4);
+}
+
+.zone-label {
+  font-size: 11px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 4px;
+}
+
+.zone-safe {
+  color: #00ff00;
+}
+
+.zone-elevated {
+  color: #ffff00;
+}
+
+.zone-high {
+  color: #ff9900;
+}
+
+.zone-critical {
+  color: #ff0000;
+}
+
+.zone-count {
+  color: #00aa00;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.threat-indicators {
+  display: flex;
+  justify-content: space-around;
+  margin-top: 15px;
+  padding-top: 12px;
+  border-top: 1px solid #00aa00;
+}
+
+.indicator {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+
+.indicator-icon {
+  font-size: 18px;
+}
+
+.indicator-label {
+  color: #00aa00;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.indicator-value {
+  color: #00ff00;
+  font-size: 13px;
+  font-weight: bold;
+  text-shadow: 0 0 3px rgba(0, 255, 0, 0.5);
+}
+
+.threat-status {
+  margin-top: 12px;
+  padding: 10px;
+  background: rgba(0, 255, 0, 0.05);
+  border: 1px solid #00aa00;
+  border-radius: 3px;
+  color: #00aa00;
+  font-size: 11px;
+  line-height: 1.4;
+}
+
+.status-message {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.status-icon {
+  flex-shrink: 0;
+  color: #00ff00;
+  font-weight: bold;
+}
+
+@keyframes threat-pulse {
+  0%, 100% {
+    box-shadow: 0 0 15px rgba(255, 0, 0, 0.8),
+                inset 0 0 10px rgba(255, 255, 0, 0.3);
+  }
+  50% {
+    box-shadow: 0 0 25px rgba(255, 0, 0, 1),
+                inset 0 0 15px rgba(255, 255, 0, 0.5);
+  }
+}
+
+.threat-critical-active .threat-fill {
+  animation: threat-pulse 1s ease-in-out infinite;
+}

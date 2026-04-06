@@ -1,0 +1,171 @@
+/* SourcePanel.css - Information Sources Panel Styles */
+/* Cyberpunk Terminal Theme: Green (#00ff00) on Black (#000) */
+
+.source-panel {
+  background-color: #000;
+  border: 1px solid #00ff00;
+  border-radius: 4px;
+  padding: 15px;
+  font-family: 'Courier New', monospace;
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+}
+
+.source-header {
+  color: #00ff00;
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(0, 255, 0, 0.6);
+  border-bottom: 1px solid #00aa00;
+  padding-bottom: 10px;
+}
+
+.sources-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.source-item {
+  background: rgba(0, 255, 0, 0.05);
+  border: 1px solid #00aa00;
+  border-radius: 4px;
+  padding: 12px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.source-item:hover {
+  background: rgba(0, 255, 0, 0.1);
+  border-color: #00ff00;
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.4);
+  transform: translateY(-2px);
+}
+
+.source-icon {
+  font-size: 24px;
+  margin-bottom: 8px;
+  display: inline-block;
+  color: #00ff00;
+  text-shadow: 0 0 5px rgba(0, 255, 0, 0.6);
+}
+
+.source-name {
+  color: #00ff00;
+  font-size: 13px;
+  font-weight: bold;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.source-count {
+  color: #00aa00;
+  font-size: 11px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.count-label {
+  color: #00aa00;
+  opacity: 0.7;
+}
+
+.count-value {
+  color: #00ff00;
+  font-weight: bold;
+  font-size: 14px;
+  text-shadow: 0 0 5px rgba(0, 255, 0, 0.6);
+}
+
+.count-trend {
+  font-size: 10px;
+  margin-left: 4px;
+}
+
+.trend-up {
+  color: #ff0000;
+}
+
+.trend-down {
+  color: #00ff00;
+}
+
+.trend-stable {
+  color: #00aa00;
+}
+
+.source-bar {
+  margin-top: 8px;
+  height: 4px;
+  background: #00aa00;
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.source-bar-fill {
+  height: 100%;
+  background: #00ff00;
+  width: 0%;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 5px rgba(0, 255, 0, 0.8);
+}
+
+.source-stats {
+  margin-top: 15px;
+  padding-top: 15px;
+  border-top: 1px solid #00aa00;
+  color: #00aa00;
+  font-size: 11px;
+}
+
+.stat-line {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+  align-items: center;
+}
+
+.stat-name {
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.stat-data {
+  color: #00ff00;
+  font-weight: bold;
+  text-shadow: 0 0 3px rgba(0, 255, 0, 0.5);
+}
+
+.total-feeds {
+  font-size: 12px;
+  color: #00ff00;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #00aa00;
+  font-weight: bold;
+  text-shadow: 0 0 5px rgba(0, 255, 0, 0.4);
+}
+
+.activity-indicator {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  background: #00ff00;
+  border-radius: 50%;
+  margin-right: 5px;
+  animation: blink 2s ease-in-out infinite;
+  box-shadow: 0 0 5px rgba(0, 255, 0, 0.8);
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+}

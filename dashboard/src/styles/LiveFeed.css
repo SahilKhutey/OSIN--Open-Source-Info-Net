@@ -1,0 +1,231 @@
+/* LiveFeed.css - Live Intelligence Feed Styles */
+/* Cyberpunk Terminal Theme: Green (#00ff00) on Black (#000) */
+
+.live-feed-container {
+  background-color: #000;
+  border: 1px solid #00ff00;
+  border-radius: 4px;
+  padding: 15px;
+  font-family: 'Courier New', monospace;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 0 15px rgba(0, 255, 0, 0.2);
+}
+
+.feed-header {
+  color: #00ff00;
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 15px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  text-shadow: 0 0 10px rgba(0, 255, 0, 0.6);
+  border-bottom: 1px solid #00aa00;
+  padding-bottom: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.feed-live-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  color: #00ff00;
+}
+
+.live-dot {
+  width: 8px;
+  height: 8px;
+  background: #00ff00;
+  border-radius: 50%;
+  animation: pulse-dot 1.5s ease-in-out infinite;
+  box-shadow: 0 0 5px rgba(0, 255, 0, 0.8);
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+    box-shadow: 0 0 5px rgba(0, 255, 0, 0.8);
+  }
+  50% {
+    opacity: 0.3;
+    box-shadow: 0 0 10px rgba(0, 255, 0, 0.4);
+  }
+}
+
+.feed-items {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.feed-item {
+  background: rgba(0, 255, 0, 0.05);
+  border-left: 3px solid #00aa00;
+  border-radius: 2px;
+  padding: 10px;
+  transition: all 0.3s ease;
+  animation: slideIn 0.5s ease-out;
+}
+
+.feed-item:hover {
+  background: rgba(0, 255, 0, 0.1);
+  border-left-color: #00ff00;
+  box-shadow: 0 0 8px rgba(0, 255, 0, 0.3);
+  transform: translateX(4px);
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.severity-critical {
+  border-left-color: #ff0000;
+  background: rgba(255, 0, 0, 0.05);
+}
+
+.severity-critical:hover {
+  border-left-color: #ff6666;
+  background: rgba(255, 0, 0, 0.1);
+  box-shadow: 0 0 12px rgba(255, 0, 0, 0.3);
+}
+
+.severity-high {
+  border-left-color: #ff9900;
+  background: rgba(255, 153, 0, 0.05);
+}
+
+.severity-high:hover {
+  border-left-color: #ffbb33;
+  background: rgba(255, 153, 0, 0.1);
+  box-shadow: 0 0 10px rgba(255, 153, 0, 0.3);
+}
+
+.severity-medium {
+  border-left-color: #ffff00;
+  background: rgba(255, 255, 0, 0.05);
+}
+
+.severity-medium:hover {
+  border-left-color: #ffff66;
+  background: rgba(255, 255, 0, 0.1);
+  box-shadow: 0 0 10px rgba(255, 255, 0, 0.3);
+}
+
+.severity-low {
+  border-left-color: #00ff00;
+  background: rgba(0, 255, 0, 0.05);
+}
+
+.severity-low:hover {
+  border-left-color: #66ff66;
+  background: rgba(0, 255, 0, 0.1);
+  box-shadow: 0 0 10px rgba(0, 255, 0, 0.3);
+}
+
+.feed-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 6px;
+}
+
+.feed-title {
+  color: #00ff00;
+  font-size: 13px;
+  font-weight: bold;
+  flex: 1;
+  word-wrap: break-word;
+}
+
+.severity-badge {
+  padding: 2px 8px;
+  border-radius: 3px;
+  font-size: 10px;
+  font-weight: bold;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-left: 8px;
+  white-space: nowrap;
+  text-shadow: 0 0 3px rgba(0, 0, 0, 0.8);
+}
+
+.severity-badge.critical {
+  background: rgba(255, 0, 0, 0.3);
+  color: #ff6666;
+  border: 1px solid #ff0000;
+}
+
+.severity-badge.high {
+  background: rgba(255, 153, 0, 0.3);
+  color: #ffbb33;
+  border: 1px solid #ff9900;
+}
+
+.severity-badge.medium {
+  background: rgba(255, 255, 0, 0.3);
+  color: #ffff66;
+  border: 1px solid #ffff00;
+}
+
+.severity-badge.low {
+  background: rgba(0, 255, 0, 0.3);
+  color: #66ff66;
+  border: 1px solid #00ff00;
+}
+
+.feed-description {
+  color: #00aa00;
+  font-size: 11px;
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.feed-timestamp {
+  color: #006600;
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.feed-source {
+  color: #00aa00;
+  font-size: 10px;
+  margin-top: 4px;
+}
+
+.no-items {
+  color: #00aa00;
+  text-align: center;
+  padding: 30px 10px;
+  opacity: 0.7;
+}
+
+.feed-items::-webkit-scrollbar {
+  width: 6px;
+}
+
+.feed-items::-webkit-scrollbar-track {
+  background: rgba(0, 255, 0, 0.05);
+  border-radius: 3px;
+}
+
+.feed-items::-webkit-scrollbar-thumb {
+  background: #00aa00;
+  border-radius: 3px;
+}
+
+.feed-items::-webkit-scrollbar-thumb:hover {
+  background: #00ff00;
+}
