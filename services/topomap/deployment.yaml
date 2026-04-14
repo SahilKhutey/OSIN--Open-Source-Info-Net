@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: osin-topomap
+  namespace: osin
+  labels:
+    app: osin-topomap
+    version: 2.1.0
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: osin-topomap
+  template:
+    metadata:
+      labels:
+        app: osin-topomap
+        version: 2.1.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8008"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: topomap
+        image: osin-topomap:2.1.0
+        ports:
+        - containerPort: 8008
+          name: http
+        env:
+        - name: ELEVATION_API_URL
+          value: "https://api.open-elevation.com/api/v1/lookup"
+        - name: REDIS_HOST
+          value: "redis-master.osin.svc.cluster.local"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8008
+          initialDelaySeconds: 45
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8008
+          initialDelaySeconds: 15
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: osin-topomap
+  namespace: osin
+spec:
+  selector:
+    app: osin-topomap
+  ports:
+  - port: 8008
+    targetPort: 8008
+  type: ClusterIP

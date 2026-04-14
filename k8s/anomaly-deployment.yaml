@@ -1,0 +1,57 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: anomaly-service
+  namespace: osin-system
+  labels:
+    app: anomaly-service
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: anomaly-service
+  template:
+    metadata:
+      labels:
+        app: anomaly-service
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8005"
+    spec:
+      containers:
+      - name: anomaly-service
+        image: osin/anomaly-service:v12
+        ports:
+        - containerPort: 8004
+          name: api
+        - containerPort: 8005
+          name: metrics
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8004
+          initialDelaySeconds: 20
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: anomaly-service
+  namespace: osin-system
+spec:
+  ports:
+    - name: api
+      port: 8004
+      targetPort: 8004
+    - name: metrics
+      port: 8005
+      targetPort: 8005
+  selector:
+    app: anomaly-service

@@ -1,0 +1,74 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: osin-geo-intelligence
+  namespace: osin
+  labels:
+    app: osin-geo-intelligence
+    version: 2.1.0
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: osin-geo-intelligence
+  template:
+    metadata:
+      labels:
+        app: osin-geo-intelligence
+        version: 2.1.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8003"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: geo-intelligence
+        image: osin-geo-intelligence:2.1.0
+        ports:
+        - containerPort: 8003
+          name: http
+        env:
+        - name: MAX_CONCURRENT_REQUESTS
+          value: "10"
+        - name: DEFAULT_ZOOM_LEVEL
+          value: "9"
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8003
+          initialDelaySeconds: 30
+          periodSeconds: 15
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8003
+          initialDelaySeconds: 10
+          periodSeconds: 10
+          timeoutSeconds: 3
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: osin-geo-intelligence
+  namespace: osin
+spec:
+  selector:
+    app: osin-geo-intelligence
+  ports:
+  - port: 8003
+    targetPort: 8003
+  type: ClusterIP

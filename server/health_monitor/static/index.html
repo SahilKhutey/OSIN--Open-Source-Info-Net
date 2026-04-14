@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OSIN SVP-1 | Global HUD</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --color-ok: #00ff88;
+            --color-warning: #ffaa00;
+            --color-error: #ff4444;
+            --color-background: #050510;
+            --color-panel: rgba(30, 30, 46, 0.7);
+            --font-mono: 'JetBrains Mono', 'Monaco', 'Consolas', monospace;
+        }
+        
+        body {
+            background: var(--color-background);
+            color: white;
+            font-family: var(--font-mono);
+            margin: 0;
+            padding: 30px;
+            overflow-x: hidden;
+        }
+
+        h1 {
+            font-size: 1.5rem;
+            letter-spacing: 0.2rem;
+            color: #00e5ff;
+            border-left: 4px solid #00e5ff;
+            padding-left: 15px;
+            margin-bottom: 40px;
+            text-transform: uppercase;
+        }
+        
+        .dashboard {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 25px;
+        }
+        
+        .panel {
+            background: var(--color-panel);
+            border: 1px solid rgba(255,255,255,0.05);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            backdrop-blur: 10px;
+        }
+
+        h2 { font-size: 0.8rem; color: #8892b0; margin-top: 0; text-transform: uppercase; letter-spacing: 0.1rem; }
+        
+        .status-grid { display: grid; gap: 12px; }
+        .status-row { display: flex; justify-content: space-between; align-items: center; font-size: 0.85rem; }
+        
+        .indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            margin-right: 10px;
+            display: inline-block;
+        }
+        
+        .status-UP { background: var(--color-ok); box-shadow: 0 0 10px var(--color-ok); }
+        .status-DOWN { background: var(--color-error); box-shadow: 0 0 10px var(--color-error); }
+        
+        .metric-big { font-size: 2rem; font-weight: 800; color: #00e5ff; }
+        .unit { font-size: 0.8rem; color: #444; margin-left: 5px; }
+
+        .latency { color: #8892b0; font-size: 0.75rem; }
+    </style>
+</head>
+<body>
+    <h1>🛰️ OSIN-SVP-1 // STAT_MONITOR_HUD</h1>
+    
+    <div class="dashboard">
+        <div class="panel">
+            <h2>Core Infrastructure Health</h2>
+            <div id="service-grid" class="status-grid">
+                <div class="status-row"><span>SYSTEM_CORE</span> <span>SCANNING...</span></div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>Host Telemetry</h2>
+            <div class="metric-big" id="cpu-val">--<span class="unit">% CPU</span></div>
+            <div class="metric-big" id="mem-val">--<span class="unit">% RAM</span></div>
+        </div>
+
+        <div class="panel">
+            <h2>Network Latency Core (ms)</h2>
+            <canvas id="latencyChart" height="120"></canvas>
+        </div>
+    </div>
+
+    <script>
+        const ctx = document.getElementById('latencyChart').getContext('2d');
+        const latencyChart = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: [],
+                datasets: [{ label: 'SYS_LATENCY', data: [], borderColor: '#00e5ff', backgroundColor: 'rgba(0,229,255,0.1)', fill: true, tension: 0.4 }]
+            },
+            options: { plugins: { legend: { display: false } }, scales: { x: { display: false }, y: { grid: { color: 'rgba(255,255,255,0.05)' } } } }
+        });
+
+        async function update() {
+            try {
+                const res = await fetch('/health');
+                const data = await res.json();
+                
+                // Update Health Grid
+                const grid = document.getElementById('service-grid');
+                grid.innerHTML = Object.entries(data)
+                    .filter(([k]) => k !== 'system' && k !== 'overall_status')
+                    .map(([name, stat]) => `
+                        <div class="status-row">
+                            <span><span class="indicator status-${stat.status}"></span>${name.toUpperCase()}</span>
+                            <span class="latency">${stat.latency_ms ? stat.latency_ms + 'ms' : 'INF'}</span>
+                        </div>
+                    `).join('');
+
+                // Update Telemetry
+                document.getElementById('cpu-val').innerHTML = `${data.system.cpu_percent}<span class="unit">% CPU</span>`;
+                document.getElementById('mem-val').innerHTML = `${data.system.memory_percent}<span class="unit">% RAM</span>`;
+
+                // Update Chart
+                const avgLat = Object.values(data).filter(v => v.latency_ms).reduce((a,b) => a + b.latency_ms, 0) / 7;
+                latencyChart.data.labels.push('');
+                latencyChart.data.datasets[0].data.push(avgLat);
+                if (latencyChart.data.labels.length > 20) {
+                    latencyChart.data.labels.shift();
+                    latencyChart.data.datasets[0].data.shift();
+                }
+                latencyChart.update();
+
+            } catch (e) { console.error('HUD LINK DOWN', e); }
+        }
+
+        setInterval(update, 2000);
+        update();
+    </script>
+</body>
+</html>

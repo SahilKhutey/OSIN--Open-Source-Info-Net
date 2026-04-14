@@ -1,0 +1,98 @@
+.adv-command-center {
+  height: 100vh; width: 100%;
+  background: #020105; display: flex; flex-direction: column;
+  font-family: 'JetBrains Mono', monospace; color: #fff;
+  overflow: hidden;
+}
+
+.adv-header {
+  padding: 20px 40px; background: linear-gradient(to right, #1a022b, #000);
+  border-bottom: 1px solid rgba(168, 85, 247, 0.2);
+  display: flex; justify-content: space-between; align-items: center;
+}
+
+.adv-branding { display: flex; align-items: center; gap: 20px; }
+.adv-logo { color: #a855f7; filter: drop-shadow(0 0 10px #a855f7); }
+.adv-title h1 { margin: 0; font-size: 18px; letter-spacing: 4px; text-transform: uppercase; color: #fff; }
+.adv-title span { font-size: 9px; color: #6b21a8; letter-spacing: 3px; text-transform: uppercase; }
+
+.temporal-state { display: flex; gap: 15px; }
+.mode-badge {
+  font-size: 9px; padding: 5px 12px; border-radius: 4px; border: 1px solid rgba(168, 85, 247, 0.3);
+  text-transform: uppercase; letter-spacing: 1px;
+}
+.mode-badge.ACTIVE, .mode-badge.ONLINE { color: #a855f7; background: rgba(168, 85, 247, 0.05); }
+
+/* Timeline Bar */
+.adv-timeline-bar {
+  padding: 15px 60px; background: #000; border-bottom: 1px solid rgba(168, 85, 247, 0.1);
+}
+.t-label { font-size: 10px; color: #a855f7; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 2px; }
+.t-slider {
+  width: 100%; height: 2px; -webkit-appearance: none; background: #1a022b; border-radius: 2px; cursor: pointer;
+}
+.t-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; width: 15px; height: 15px; background: #a855f7; border-radius: 50%; box-shadow: 0 0 10px #a855f7;
+}
+.t-markers { display: flex; justify-content: space-between; font-size: 8px; color: #333; margin-top: 8px; letter-spacing: 2px; }
+
+/* Main Grid */
+.adv-grid {
+  flex: 1; display: grid; grid-template-columns: 320px 1fr 380px; gap: 1px;
+  background: rgba(168, 85, 247, 0.1);
+}
+
+.col-status, .col-center, .col-ai { background: #000; padding: 25px; display: flex; flex-direction: column; }
+
+.p-header {
+  font-size: 10px; color: #a855f7; text-transform: uppercase; letter-spacing: 2px;
+  margin-bottom: 30px; border-left: 2px solid #a855f7; padding-left: 10px;
+}
+
+/* Status Section */
+.status-v-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 40px; }
+.v-item { display: flex; justify-content: space-between; font-size: 11px; padding: 12px; background: rgba(255,255,255,0.02); }
+.v-item .green { color: #4cd137; }
+.v-item .amber { color: #f97316; animation: adv-blink 1s infinite; }
+
+@keyframes adv-blink { 50% { opacity: 0.3; } }
+
+.sim-trigger {
+  padding: 15px; background: transparent; border: 1px solid #ef4444; color: #ef4444;
+  display: flex; justify-content: center; align-items: center; gap: 10px;
+  border-radius: 4px; cursor: pointer; font-size: 10px; text-transform: uppercase; letter-spacing: 1px;
+}
+.sim-trigger:hover { background: #ef4444; color: #000; box-shadow: 0 0 15px rgba(239, 68, 68, 0.4); }
+
+.risk-widget { margin-top: auto; }
+.r-label { font-size: 9px; color: #555; margin-bottom: 10px; }
+.r-bar { width: 100%; height: 2px; background: #111; }
+.r-bar .fill { height: 100%; background: #a855f7; box-shadow: 0 0 10px #a855f7; transition: width 0.5s; }
+
+/* Globe View */
+.col-center { padding: 0; }
+.v-globe-box { flex: 1; }
+
+/* AI Command Section */
+.chat-viewport { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; padding-bottom: 20px; }
+.chat-msg { padding: 15px; border-radius: 8px; font-size: 11px; line-height: 1.5; }
+.chat-msg.user { background: rgba(255,255,255,0.03); border-left: 2px solid #fff; }
+.chat-msg.ai { background: rgba(168, 85, 247, 0.05); border-left: 2px solid #a855f7; color: #d8b4fe; }
+
+.m-header { font-size: 8px; opacity: 0.4; margin-bottom: 8px; text-transform: uppercase; }
+
+.chat-input-box {
+  display: flex; gap: 10px; background: #0a0a0a; border: 1px solid rgba(255,255,255,0.1);
+  padding: 10px; border-radius: 4px;
+}
+.chat-input-box input {
+  flex: 1; background: transparent; border: none; color: #fff; font-size: 11px; outline: none;
+}
+.chat-input-box button { background: none; border: none; color: #a855f7; cursor: pointer; }
+
+/* Footer */
+.adv-footer {
+  padding: 15px 40px; background: #000; border-top: 1px solid rgba(168, 85, 247, 0.1);
+  display: flex; justify-content: space-between; font-size: 9px; color: #3b0764;
+}
+.adv-footer div { display: flex; align-items: center; gap: 10px; }

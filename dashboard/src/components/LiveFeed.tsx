@@ -24,14 +24,14 @@ export const LiveFeed: React.FC = () => {
       <div className="feed-container">
         {events.length === 0 ? (
           <div className="no-events">
-            <span>> AWAITING SIGNAL STREAM...</span>
+            <span>&gt; AWAITING SIGNAL STREAM...</span>
           </div>
         ) : (
           <div className="feed-items">
             {events.map((event) => (
               <div key={event.id} className={`feed-item ${getSeverityClass(event.severity)}`}>
                 <div className="item-header">
-                  <span className="timestamp">{formatTime(event.timestamp)}</span>
+                  <span className="timestamp">{formatTime(String(event.timestamp))}</span>
                   <span className={`severity-badge ${getSeverityClass(event.severity)}`}>
                     {event.severity.toUpperCase()}
                   </span>

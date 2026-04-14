@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: osin-forensics
+  namespace: osin
+  labels:
+    app: osin-forensics
+    version: 2.1.0
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: osin-forensics
+  template:
+    metadata:
+      labels:
+        app: osin-forensics
+        version: 2.1.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8010"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: forensics
+        image: osin-forensics:2.1.0
+        ports:
+        - containerPort: 8010
+          name: http
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8010
+          initialDelaySeconds: 45
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8010
+          initialDelaySeconds: 15
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: osin-forensics
+  namespace: osin
+spec:
+  selector:
+    app: osin-forensics
+  ports:
+  - port: 8010
+    targetPort: 8010
+  type: ClusterIP

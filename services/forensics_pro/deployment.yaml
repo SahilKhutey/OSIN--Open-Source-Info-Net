@@ -1,0 +1,66 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: osin-forensics-pro
+  namespace: osin
+  labels:
+    app: osin-forensics-pro
+    version: 2.1.0
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: osin-forensics-pro
+  template:
+    metadata:
+      labels:
+        app: osin-forensics-pro
+        version: 2.1.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8011"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: forensics-pro
+        image: osin-forensics-pro:2.1.0
+        ports:
+        - containerPort: 8011
+          name: http
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8011
+          initialDelaySeconds: 60
+          periodSeconds: 20
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8011
+          initialDelaySeconds: 15
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: osin-forensics-pro
+  namespace: osin
+spec:
+  selector:
+    app: osin-forensics-pro
+  ports:
+  - port: 8011
+    targetPort: 8011
+  type: ClusterIP

@@ -1,0 +1,123 @@
+.image-upload-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 5000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.upload-container {
+  width: 450px;
+  background: #0a0a0a;
+  border: 1px solid #00ff0033;
+  border-radius: 12px;
+  box-shadow: 0 20px 80px rgba(0, 255, 0, 0.1);
+  overflow: hidden;
+  font-family: 'Inter', sans-serif;
+}
+
+.upload-header {
+  padding: 20px;
+  background: #111;
+  border-bottom: 1px solid #222;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.upload-header h3 {
+  margin: 0;
+  font-size: 14px;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: #00ff00;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #555;
+  font-size: 24px;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.close-btn:hover { color: #fff; }
+
+.upload-body {
+  padding: 40px 30px;
+}
+
+.drop-zone {
+  border: 2px dashed #00ff0022;
+  border-radius: 8px;
+  padding: 40px;
+  text-align: center;
+  cursor: pointer;
+  background: #111;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.drop-zone:hover {
+  background: #00ff000a;
+  border-color: #00ff0066;
+  box-shadow: 0 0 20px #00ff0011;
+}
+
+.drop-zone .icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+}
+
+.drop-zone p {
+  color: #ddd;
+  margin-bottom: 8px;
+}
+
+.drop-zone span {
+  font-size: 10px;
+  color: #555;
+  text-transform: uppercase;
+}
+
+.analyzing-state {
+  text-align: center;
+}
+
+.radar-spinner {
+  width: 60px;
+  height: 60px;
+  border: 2px solid #00ff00;
+  border-radius: 50%;
+  margin: 0 auto 20px;
+  position: relative;
+  animation: radarPulse 1.5s infinite linear;
+}
+
+@keyframes radarPulse {
+  0% { transform: scale(0.8); opacity: 1; border-width: 4px; }
+  100% { transform: scale(1.5); opacity: 0; border-width: 1px; }
+}
+
+.error-alert {
+  margin-top: 20px;
+  padding: 12px;
+  background: rgba(255, 0, 0, 0.1);
+  border: 1px solid rgba(255, 0, 0, 0.3);
+  color: #ff4444;
+  border-radius: 4px;
+  font-size: 12px;
+  text-align: center;
+}
+
+.upload-footer {
+  padding: 15px;
+  background: #050505;
+  border-top: 1px solid #111;
+  font-size: 10px;
+  color: #444;
+  text-align: center;
+}

@@ -1,0 +1,6 @@
+fastapi
+uvicorn
+kafka-python
+neo4j
+python-dotenv
+asyncio

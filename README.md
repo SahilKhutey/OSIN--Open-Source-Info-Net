@@ -34,6 +34,15 @@ The OSIN Ingestion Suite provides modular, robust pipelines for collecting data 
 - **Grafana**: Pre-configured dashboards for operational visibility.
 - **Alertmanager**: Critical alerting for rate limits and source degradation.
 
+## 📂 Directory Structure
+
+- `backend/`: Core FastAPI intelligence engine and API.
+- `dashboard/`: 3D Geo-Intelligence React interface.
+- `services/`: Specialized microservices (e.g., Deduplication).
+- `scripts/`: Operational utility and launch scripts.
+- `docs/`: Comprehensive guides, manuals, and technical documentation.
+- `secure/`: Platform configuration, secrets, and K8s manifests.
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -48,14 +57,17 @@ pip install -r requirements.txt
 playwright install
 ```
 
-### 2. Configuration
-Configure platform credentials in `secure/osin/ingestion/<platform>/k8s-deployment.yaml` via ConfigMaps and Secrets.
+### 2. Deployment & Launch
+Reference the comprehensive guides in `docs/` for platform-specific deployment.
 
-### 3. Deployment
+For a quick-start of the unified environment:
 ```bash
-# Example: Deploy News Ingestion
-kubectl apply -f secure/osin/ingestion/news/k8s-deployment.yaml
+# Launch consolidated dashboard and backend
+.\scripts\launch_all_dashboards.bat
 ```
+
+### 3. Configuration
+Configure platform credentials in `secure/osin/ingestion/<platform>/k8s-deployment.yaml` via ConfigMaps and Secrets.
 
 ## 📜 Compliance & Ethics
 This suite is designed for ethical data collection. Users are responsible for complying with platform Terms of Service and local data protection regulations. Use the `COMPLIANCE_MODE=strict` environment variable for maximum adherence to privacy standards.

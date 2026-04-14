@@ -1,0 +1,206 @@
+.pro-forensics-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 5, 10, 0.95);
+  backdrop-filter: blur(20px);
+  z-index: 7000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'JetBrains Mono', 'Fira Code', monospace;
+}
+
+.pro-container {
+  width: 600px;
+  background: #000;
+  border: 1px solid #00ffff22;
+  box-shadow: 0 0 150px rgba(0, 255, 255, 0.05), inset 0 0 20px rgba(0, 255, 255, 0.02);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.pro-header {
+  padding: 25px;
+  background: linear-gradient(90deg, #050505, #000);
+  border-bottom: 1px solid #111;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title-stack h3 {
+  margin: 0;
+  font-size: 14px;
+  color: #00ffff;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+}
+
+.title-stack span {
+  font-size: 9px;
+  color: #444;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #222;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.close-btn:hover { color: #fff; }
+
+.pro-body {
+  padding: 40px;
+}
+
+.mode-selector {
+  margin-bottom: 40px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.mode-selector .label {
+  font-size: 10px;
+  color: #666;
+  text-transform: uppercase;
+}
+
+.mode-selector .pills {
+  display: flex;
+  gap: 8px;
+}
+
+.mode-selector button {
+  background: #050505;
+  border: 1px solid #111;
+  color: #333;
+  padding: 6px 15px;
+  font-size: 9px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mode-selector button.active {
+  background: #00ffff0a;
+  border-color: #00ffff44;
+  color: #00ffff;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
+}
+
+.drop-zone-pro {
+  border: 1px dashed #111;
+  background: #020202;
+  padding: 80px 40px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.drop-zone-pro:hover {
+  background: #050505;
+  border-color: #333;
+}
+
+.drop-zone-pro .icon {
+  font-size: 50px;
+  margin-bottom: 25px;
+  color: #00ffff;
+  opacity: 0.2;
+}
+
+.drop-zone-pro p {
+  color: #888;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.drop-zone-pro span {
+  font-size: 8px;
+  color: #444;
+  text-transform: uppercase;
+}
+
+.analyzing-state {
+  text-align: center;
+  padding: 20px 0;
+}
+
+.cv-hud {
+  width: 150px;
+  height: 150px;
+  margin: 0 auto 30px;
+  border: 1px solid #00ffff11;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.crosshair {
+  width: 40px;
+  height: 40px;
+  border: 1px solid #00ffff44;
+  border-radius: 50%;
+  position: relative;
+}
+
+.crosshair::before, .crosshair::after {
+  content: '';
+  position: absolute;
+  background: #00ffff44;
+}
+
+.crosshair::before { width: 60px; height: 1px; left: -10px; top: 50%; }
+.crosshair::after { height: 60px; width: 1px; top: -10px; left: 50%; }
+
+.scan-line {
+  width: 100%;
+  height: 1px;
+  background: #00ffff;
+  box-shadow: 0 0 20px #00ffff;
+  position: absolute;
+  top: 0;
+  animation: scanHUD 2.5s infinite linear;
+}
+
+@keyframes scanHUD {
+  0% { top: 0; opacity: 0; }
+  10% { opacity: 1; }
+  90% { opacity: 1; }
+  100% { top: 100%; opacity: 0; }
+}
+
+.status-log {
+  font-size: 10px;
+  color: #00ffff88;
+  text-align: left;
+  line-height: 2;
+  max-width: 320px;
+  margin: 0 auto;
+}
+
+.error-alert {
+  margin-top: 25px;
+  padding: 15px;
+  border: 1px solid #ff000022;
+  background: rgba(255, 0, 0, 0.05);
+  color: #ff4444;
+  font-size: 11px;
+}
+
+.pro-footer {
+  padding: 15px;
+  background: #020202;
+  border-top: 1px solid #111;
+  font-size: 8px;
+  color: #222;
+  text-align: center;
+  letter-spacing: 2px;
+}

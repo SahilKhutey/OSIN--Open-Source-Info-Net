@@ -1,0 +1,84 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: osin-zoom-earth
+  namespace: osin
+  labels:
+    app: osin-zoom-earth
+    version: 2.1.0
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: osin-zoom-earth
+  template:
+    metadata:
+      labels:
+        app: osin-zoom-earth
+        version: 2.1.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8007"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: zoom-earth
+        image: osin-zoom-earth:2.1.0
+        ports:
+        - containerPort: 8007
+          name: http
+        env:
+        - name: OPENWEATHER_API_KEY
+          valueFrom:
+            secretKeyRef:
+              name: openweather-secret
+              key: api-key
+        - name: DEFAULT_ZOOM_LEVEL
+          value: "6"
+        resources:
+          requests:
+            memory: "512Mi"
+            cpu: "250m"
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8007
+          initialDelaySeconds: 45
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8007
+          initialDelaySeconds: 15
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: osin-zoom-earth
+  namespace: osin
+spec:
+  selector:
+    app: osin-zoom-earth
+  ports:
+  - port: 8007
+    targetPort: 8007
+  type: ClusterIP
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: openweather-secret
+  namespace: osin
+type: Opaque
+data:
+  # Placeholder: TVBZX1BMQUNFSE9MREVS (base64 for "PLACEHOLDER")
+  api-key: TVBZX1BMQUNFSE9MREVS

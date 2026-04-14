@@ -1,0 +1,86 @@
+.geo-intel-center {
+  height: 100vh; width: 100%;
+  background: #000; display: flex; flex-direction: column;
+  font-family: 'JetBrains Mono', monospace; color: #fff;
+  overflow: hidden;
+}
+
+.geo-header {
+  padding: 20px 40px; background: linear-gradient(to right, #001a1a, #000);
+  border-bottom: 1px solid rgba(0, 255, 204, 0.2);
+  display: flex; justify-content: space-between; align-items: center;
+}
+
+.geo-branding { display: flex; align-items: center; gap: 20px; }
+.geo-icon { color: #00ffcc; filter: drop-shadow(0 0 10px #00ffcc); }
+.geo-title h1 { margin: 0; font-size: 18px; letter-spacing: 4px; text-transform: uppercase; color: #fff; }
+.geo-title span { font-size: 9px; color: #008877; letter-spacing: 3px; text-transform: uppercase; }
+
+.geo-stats { display: flex; gap: 30px; }
+.stat-box { display: flex; flex-direction: column; align-items: flex-end; }
+.stat-box .l { font-size: 9px; color: #555; text-transform: uppercase; }
+.stat-box .v { font-size: 14px; font-weight: bold; }
+
+/* Main Section */
+.geo-main {
+  flex: 1; display: grid; grid-template-columns: 320px 1fr 350px; gap: 1px;
+  background: rgba(0, 255, 204, 0.05);
+}
+
+.geo-col-meta, .geo-col-globe, .geo-col-feed { background: #000; padding: 25px; display: flex; flex-direction: column; }
+
+.geo-panel-label {
+  font-size: 10px; color: #00ffcc; text-transform: uppercase; letter-spacing: 2px;
+  margin-bottom: 30px; border-left: 2px solid #00ffcc; padding-left: 10px;
+}
+
+/* Posture */
+.geo-status-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 40px; }
+.g-item { display: flex; justify-content: space-between; font-size: 11px; padding: 12px; background: rgba(0,255,204,0.02); }
+.g-item .s.green { color: #00ffcc; }
+.g-item .s.pulse { color: #fbff00; animation: geo-blink 1s infinite; }
+
+@keyframes geo-blink { 50% { opacity: 0.3; } }
+
+.geo-analysis-trigger { margin-bottom: 40px; }
+.briefing-btn {
+  width: 100%; padding: 15px; background: rgba(0, 255, 204, 0.1); border: 1px solid #00ffcc;
+  color: #00ffcc; display: flex; justify-content: center; align-items: center; gap: 12px;
+  cursor: pointer; border-radius: 4px; transition: all 0.2s;
+}
+.briefing-btn:hover { background: #00ffcc; color: #000; box-shadow: 0 0 20px rgba(0,255,204,0.4); }
+.hint { font-size: 8px; color: #333; margin-top: 10px; text-align: center; text-transform: uppercase; }
+
+.geo-risk-box { margin-top: auto; }
+.r-head { font-size: 10px; color: #888; margin-bottom: 12px; }
+.r-track { width: 100%; height: 2px; background: #111; }
+.r-fill { height: 100%; background: #00ffcc; box-shadow: 0 0 10px #00ffcc; transition: width 1s; }
+
+/* Globe */
+.geo-col-globe { position: relative; padding: 0; }
+.geo-viewport { flex: 1; }
+.geo-globe-overlay { position: absolute; top: 20px; left: 20px; z-index: 10; }
+.geo-legend { display: flex; flex-direction: column; gap: 10px; background: rgba(0,0,0,0.5); padding: 15px; border-radius: 4px; }
+.leg { font-size: 9px; display: flex; align-items: center; gap: 10px; color: #888; }
+.dot { width: 6px; height: 6px; border-radius: 50%; }
+.dot.red { background: #ff0044; box-shadow: 0 0 8px #ff0044; }
+.dot.amber { background: #ffaa00; }
+.dot.cyan { background: #00ffcc; }
+
+/* Feed */
+.geo-feed-list { flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; }
+.geo-card { padding: 15px; border: 1px solid rgba(255,255,255,0.05); background: rgba(255,255,255,0.01); border-left: 2px solid #333; }
+.geo-card.CRITICAL { border-left-color: #ff0044; background: rgba(255,0,68,0.03); }
+.geo-card.HIGH { border-left-color: #ffaa00; }
+.c-t { display: flex; justify-content: space-between; font-size: 9px; margin-bottom: 8px; }
+.c-t .p { font-weight: bold; }
+.c-t .s { color: #00ffcc; }
+.c-b { font-size: 11px; color: #ccc; line-height: 1.4; }
+.c-f { font-size: 8px; color: #444; margin-top: 10px; font-family: 'Courier New', monospace; }
+
+/* Footer */
+.geo-footer {
+  padding: 15px 40px; background: #000; border-top: 1px solid rgba(0, 255, 204, 0.2);
+  display: flex; justify-content: space-between; font-size: 9px; color: #005544;
+}
+.geo-footer div { display: flex; align-items: center; gap: 10px; }

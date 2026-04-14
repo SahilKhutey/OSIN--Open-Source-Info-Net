@@ -1,0 +1,68 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: zero-trust-gateway
+  namespace: osin-system
+  labels:
+    app: zero-trust-gateway
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: zero-trust-gateway
+  template:
+    metadata:
+      labels:
+        app: zero-trust-gateway
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8006"
+    spec:
+      containers:
+      - name: zero-trust-gateway
+        image: osin/zero-trust-gateway:v12
+        ports:
+        - containerPort: 8443
+          name: https
+        - containerPort: 8006
+          name: metrics
+        env:
+        - name: GATEWAY_KEY_INTERNAL
+          value: "osin-internal-v12"
+        - name: GATEWAY_KEY_XR
+          value: "osin-xr-v12"
+        - name: STRICT_MTLS
+          value: "false" # Set to true once cert-manager is configured
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "100m"
+          limits:
+            memory: "512Mi"
+            cpu: "250m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8443
+            scheme: HTTPS
+          initialDelaySeconds: 15
+          periodSeconds: 10
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: zero-trust-gateway
+  namespace: osin-system
+spec:
+  type: NodePort # Local Target Configuration
+  ports:
+    - name: https
+      port: 8443
+      targetPort: 8443
+      nodePort: 30443
+    - name: metrics
+      port: 8006
+      targetPort: 8006
+      nodePort: 30444
+  selector:
+    app: zero-trust-gateway

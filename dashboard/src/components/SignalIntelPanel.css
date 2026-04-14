@@ -1,0 +1,190 @@
+.signal-panel-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 10, 20, 0.9);
+  backdrop-filter: blur(25px);
+  z-index: 12000;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: 'JetBrains Mono', monospace;
+}
+
+.signal-container {
+  width: 550px;
+  background: #000b14;
+  border: 1px solid rgba(0, 200, 255, 0.2);
+  border-radius: 4px;
+  box-shadow: 0 0 100px rgba(0, 100, 255, 0.1);
+  overflow: hidden;
+}
+
+.signal-header {
+  padding: 20px 25px;
+  background: #001220;
+  border-bottom: 1px solid rgba(0, 200, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.signal-header .title-stack h3 {
+  margin: 0;
+  font-size: 14px;
+  color: #00c8ff;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+.signal-header .title-stack span {
+  font-size: 9px;
+  color: #005b80;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  color: #004d66;
+  font-size: 20px;
+  cursor: pointer;
+}
+
+.close-btn:hover { color: #00c8ff; }
+
+.signal-body {
+  padding: 40px;
+}
+
+.scanning-state {
+  text-align: center;
+}
+
+.signal-hud {
+  width: 150px;
+  height: 150px;
+  margin: 0 auto 30px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.wave {
+  position: absolute;
+  border: 1px solid #00c8ff;
+  border-radius: 50%;
+  opacity: 0;
+  animation: pulseWave 3s infinite linear;
+}
+
+.wave1 { width: 40px; height: 40px; animation-delay: 0s; }
+.wave2 { width: 80px; height: 80px; animation-delay: 1s; }
+.wave3 { width: 120px; height: 120px; animation-delay: 2s; }
+
+@keyframes pulseWave {
+  0% { transform: scale(1); opacity: 0.8; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+.scanning-state p {
+  color: #00c8ff;
+  font-size: 13px;
+  margin-bottom: 8px;
+}
+
+.scanning-state span {
+  font-size: 10px;
+  color: #005b80;
+  text-transform: uppercase;
+}
+
+.signal-input-area {
+  text-align: center;
+}
+
+.signal-input-area .icon {
+  font-size: 40px;
+  margin-bottom: 20px;
+  filter: drop-shadow(0 0 10px #00c8ff);
+}
+
+.signal-input-area p {
+  color: #00c8ff;
+  font-size: 12px;
+  margin-bottom: 30px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.scan-modes {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 25px;
+}
+
+.scan-modes button {
+  flex: 1;
+  padding: 10px;
+  background: #001626;
+  border: 1px solid #002e4d;
+  color: #004d66;
+  font-size: 9px;
+  text-transform: uppercase;
+  cursor: pointer;
+  letter-spacing: 1px;
+}
+
+.scan-modes button.active {
+  color: #00c8ff;
+  border-color: #00c8ff;
+  background: rgba(0, 200, 255, 0.05);
+}
+
+.signal-input-area input {
+  width: 100%;
+  padding: 15px;
+  background: #000;
+  border: 1px solid #002e4d;
+  color: #00c8ff;
+  font-family: inherit;
+  font-size: 14px;
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.audit-btn {
+  width: 100%;
+  padding: 18px;
+  background: rgba(0, 200, 255, 0.1);
+  border: 1px solid rgba(0, 200, 255, 0.3);
+  color: #00c8ff;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 11px;
+  cursor: pointer;
+}
+
+.audit-btn:hover:not(:disabled) {
+  background: rgba(0, 200, 255, 0.2);
+  border-color: #00c8ff;
+}
+
+.error-alert {
+  margin-top: 20px;
+  padding: 12px;
+  background: rgba(255, 0, 0, 0.05);
+  border: 1px solid rgba(255, 0, 0, 0.2);
+  color: #ff5555;
+  font-size: 11px;
+  text-align: center;
+}
+
+.signal-footer {
+  padding: 15px;
+  background: #000810;
+  border-top: 1px solid rgba(0, 200, 255, 0.05);
+  font-size: 8px;
+  color: #004d66;
+  text-align: center;
+  letter-spacing: 2px;
+}

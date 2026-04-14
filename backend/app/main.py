@@ -1,18 +1,20 @@
-from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
-from fastapi.staticfiles import StaticFiles
+from fastapi import FastAPI, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
-from app.api.router import router as signals_router
-from app.config import settings
-import time
+from neo4j import GraphDatabase
+import logging
+import os
 import json
 import asyncio
-from typing import Set
-import random
+from kafka import KafkaConsumer
 from datetime import datetime
 
-app = FastAPI(title=settings.PROJECT_NAME)
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
 
-# CORS middleware for frontend access
+app = FastAPI(title="OSIN v9 Intelligence Backend")
+
+# CORS Configuration
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -21,135 +23,125 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Basic rate limiting middleware
-RATE_LIMIT_DURATION = 1.0  # seconds
-last_request_time = {}
+# Infrastructure Configuration
+KAFKA_BOOTSTRAP_SERVERS = os.getenv("KAFKA_BOOTSTRAP_SERVERS", "kafka:29092")
+NEO4J_URI = os.getenv("NEO4J_URI", "bolt://osin-graph:7687")
+NEO4J_USER = os.getenv("NEO4J_USER", "neo4j")
+NEO4J_PASSWORD = os.getenv("NEO4J_PASSWORD", "password")
 
-@app.middleware("http")
-async def rate_limit_middleware(request: Request, call_next):
-    client_ip = request.client.host
-    current_time = time.time()
-    
-    if client_ip in last_request_time:
-        if current_time - last_request_time[client_ip] < RATE_LIMIT_DURATION:
-            from fastapi.responses import JSONResponse
-            return JSONResponse(status_code=429, content={"detail": "Too many requests"})
-    
-    last_request_time[client_ip] = current_time
-    response = await call_next(request)
-    return response
+# Blind Mode (Simulation) Flag
+BLIND_MODE = os.getenv("OSIN_BLIND_MODE", "false").lower() == "true"
 
-app.include_router(signals_router, prefix="/api/v1")
+# Infrastructure Drivers
+driver = None
 
-# WebSocket connection manager
-class ConnectionManager:
+def get_neo4j_driver():
+    global driver
+    if not driver:
+        driver = GraphDatabase.driver(NEO4J_URI, auth=(NEO4J_USER, NEO4J_PASSWORD))
+    return driver
+
+class IntelligenceOrchestrator:
     def __init__(self):
-        self.active_connections: Set[WebSocket] = set()
-
-    async def connect(self, websocket: WebSocket):
-        await websocket.accept()
-        self.active_connections.add(websocket)
-
-    def disconnect(self, websocket: WebSocket):
-        self.active_connections.discard(websocket)
-
-    async def broadcast(self, message: dict):
-        disconnected = set()
-        for connection in self.active_connections:
-            try:
-                await connection.send_json(message)
-            except Exception:
-                disconnected.add(connection)
+        self.consumer = None
         
-        for connection in disconnected:
-            self.disconnect(connection)
+    async def start_consumer(self):
+        """Background task to consume and index intelligence"""
+        if BLIND_MODE:
+            logger.info("OSIN BLIND MODE ACTIVE: Skipping Kafka infrastructure initialization.")
+            return
 
-manager = ConnectionManager()
+        while not self.consumer:
+            try:
+                self.consumer = KafkaConsumer(
+                    "osin.processed.nlp", "osin.processed.cv", "osin.intelligence.correlations",
+                    bootstrap_servers=KAFKA_BOOTSTRAP_SERVERS,
+                    value_deserializer=lambda v: json.loads(v.decode('utf-8')),
+                    group_id='osin-backend-group'
+                )
+                logger.info("Kafka Consumer connected to intelligence streams")
+            except Exception as e:
+                logger.warning(f"Waiting for Kafka in Backend... {e}")
+                await asyncio.sleep(5)
 
-@app.websocket("/ws/intelligence")
-async def websocket_endpoint(websocket: WebSocket):
-    await manager.connect(websocket)
-    try:
-        while True:
-            # Receive message from client (if any)
-            data = await asyncio.wait_for(websocket.receive_text(), timeout=1.0)
-            if data:
-                await websocket.send_json({"type": "ack", "message": "received"})
-    except asyncio.TimeoutError:
-        pass
-    except WebSocketDisconnect:
-        manager.disconnect(websocket)
-    except Exception as e:
-        print(f"WebSocket error: {e}")
-        manager.disconnect(websocket)
+        for message in self.consumer:
+            try:
+                data = message.value
+                topic = message.topic
+                
+                with get_neo4j_driver().session() as session:
+                    if "processed" in topic:
+                        # Index a processed event node
+                        session.execute_write(self._create_event_node, data)
+                        logger.info(f"Indexed Event: {data.get('original_id')}")
+                    elif "correlations" in topic:
+                        # Create correlation relationship
+                        session.execute_write(self._create_correlation, data)
+                        logger.info(f"Connected Intelligence: {data.get('event_a')} <-> {data.get('event_b')}")
+                        
+            except Exception as e:
+                logger.error(f"Error indexing intelligence: {e}")
 
-# Mock data generator for demo
-async def generate_mock_events():
-    """Generate mock intelligence events for testing"""
-    sources = ['twitter', 'reddit', 'youtube', 'news']
-    locations = [
-        (37.7749, -122.4194),  # San Francisco
-        (51.5074, -0.1278),    # London
-        (35.6762, 139.6503),   # Tokyo
-        (40.7128, -74.0060),   # New York
-        (-33.8688, 151.2093),  # Sydney
-    ]
-    
-    event_templates = [
-        "Breaking: Market volatility detected in {region}",
-        "Alert: Trending topic surge on {source}",
-        "Intelligence: Geopolitical developments in {region}",
-        "Analysis: Data anomaly detected",
-        "Update: Cross-platform signal validation",
-    ]
-    
-    threat_levels = [25, 35, 45, 55, 65]
-    
-    while True:
-        try:
-            lat, lon = random.choice(locations)
-            source = random.choice(sources)
-            event = {
-                "type": "event",
-                "payload": {
-                    "id": f"evt_{int(time.time()*1000)}",
-                    "platform": source,
-                    "text": random.choice(event_templates).format(region="Zone Alpha", source=source),
-                    "confidence": round(random.uniform(0.5, 0.95), 2),
-                    "timestamp": datetime.utcnow().isoformat(),
-                    "location": {
-                        "lat": lat + random.uniform(-0.1, 0.1),
-                        "lon": lon + random.uniform(-0.1, 0.1),
-                        "accuracy": random.uniform(1, 10)
-                    }
-                }
-            }
-            await manager.broadcast(event)
-            
-            # Random threat level update
-            if random.random() > 0.7:
-                threat_event = {
-                    "type": "threat",
-                    "payload": {
-                        "level": random.choice(threat_levels)
-                    }
-                }
-                await manager.broadcast(threat_event)
-            
-            await asyncio.sleep(random.uniform(2, 5))
-        except Exception as e:
-            print(f"Error in event generator: {e}")
-            await asyncio.sleep(5)
+    @staticmethod
+    def _create_event_node(tx, data):
+        query = (
+            "MERGE (e:Event {id: $id}) "
+            "SET e.source = $source, e.type = $type, e.timestamp = $timestamp, e.intelligence = $intel "
+            "RETURN e"
+        )
+        tx.run(query, id=data.get('original_id'), source=data.get('source'), 
+               type=data.get('processed_type'), timestamp=data.get('timestamp'),
+               intel=json.dumps(data.get('intelligence')))
 
-# Start background task for mock events
+    @staticmethod
+    def _create_correlation(tx, data):
+        query = (
+            "MATCH (a:Event {id: $id_a}), (b:Event {id: $id_b}) "
+            "MERGE (a)-[r:CORRELATED_WITH {confidence: $confidence, reasons: $reasons}]-(b) "
+            "RETURN r"
+        )
+        tx.run(query, id_a=data.get('event_a'), id_b=data.get('event_b'),
+               confidence=data.get('confidence'), reasons=data.get('reasons'))
+
+orchestrator = IntelligenceOrchestrator()
+
 @app.on_event("startup")
 async def startup_event():
-    asyncio.create_task(generate_mock_events())
+    # Start the intelligence consumer in the background
+    asyncio.create_task(orchestrator.start_consumer())
 
 @app.get("/")
 async def root():
-    return {"message": "OSIN Intelligence Engine is LIVE", "ws": "/ws/intelligence"}
+    return {"status": "OSIN v9 Live", "components": ["Kafka", "Neo4j", "GraphIntelligence"]}
 
-@app.get("/health")
-async def health_check():
-    return {"status": "healthy", "timestamp": datetime.utcnow().isoformat()}
+@app.get("/intelligence/graph")
+async def get_graph_summary():
+    """Returns metrics from the intelligence graph (supports Blind Mode)"""
+    if BLIND_MODE:
+        return {
+            "total_events": 142,
+            "total_correlations": 89,
+            "status": "SIMULATED",
+            "timestamp": datetime.utcnow().isoformat()
+        }
+    
+    try:
+        with get_neo4j_driver().session() as session:
+            result = session.run("MATCH (n:Event) RETURN count(n) as count")
+            event_count = result.single()["count"]
+            
+            result = session.run("MATCH ()-[r:CORRELATED_WITH]->() RETURN count(r) as count")
+            corr_count = result.single()["count"]
+            
+            return {
+                "total_events": event_count,
+                "total_correlations": corr_count,
+                "timestamp": datetime.utcnow().isoformat()
+            }
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/intelligence/search")
+async def search_intelligence(query: str):
+    """Placeholder for graph-based semantic search"""
+    return {"query": query, "results": [], "note": "Vector search integration pending"}

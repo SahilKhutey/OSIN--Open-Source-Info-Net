@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: osin-graph-core
+  namespace: osin
+  labels:
+    app: osin-graph-core
+    version: 3.6.0
+spec:
+  replicas: 2
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: osin-graph-core
+  template:
+    metadata:
+      labels:
+        app: osin-graph-core
+        version: 3.6.0
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8020"
+        prometheus.io/path: "/metrics"
+    spec:
+      containers:
+      - name: graph-core
+        image: osin-graph-core:3.6.0
+        ports:
+        - containerPort: 8020
+          name: http
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "1000m"
+          limits:
+            memory: "4Gi"
+            cpu: "2000m"
+        volumeMounts:
+        - name: model-cache
+          mountPath: /root/.cache/torch
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8020
+          initialDelaySeconds: 90
+          periodSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8020
+          initialDelaySeconds: 45
+          periodSeconds: 15
+      volumes:
+      - name: model-cache
+        persistentVolumeClaim:
+          claimName: osin-ml-models-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: osin-graph-core
+  namespace: osin
+spec:
+  selector:
+    app: osin-graph-core
+  ports:
+  - port: 8020
+    targetPort: 8020
+  type: ClusterIP

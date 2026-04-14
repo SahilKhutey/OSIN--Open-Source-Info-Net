@@ -1,100 +1,213 @@
 version: '3.8'
 
 services:
-  db:
-    image: timescale/timescaledb:latest-pg15
-    container_name: osin-db
+  # Kafka Cluster
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: osin-zookeeper
     environment:
-      - POSTGRES_USER=osin_user
-      - POSTGRES_PASSWORD=osin_password
-      - POSTGRES_DB=osin_intelligence
-    ports:
-      - "5432:5432"
-    volumes:
-      - osin_db_data:/var/lib/postgresql/data
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
     networks:
       - osin_network
 
-  redis:
-    image: redis:7-alpine
-    container_name: osin-cache
-    ports:
-      - "6379:6379"
-    networks:
-      - osin_network
-
-  redpanda:
-    image: docker.redpanda.com/redpandadata/redpanda:latest
-    container_name: osin-streaming
-    command:
-      - redpanda start
-      - --smp 1
-      - --overprovisioned
-      - --node-id 0
-      - --kafka-addr PLAINTEXT://0.0.0.0:29092,OUTSIDE://0.0.0.0:9092
-      - --advertise-kafka-addr PLAINTEXT://redpanda:29092,OUTSIDE://localhost:9092
-      - --pandaproxy-addr 0.0.0.0:8082
-      - --advertise-pandaproxy-addr localhost:8082
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: osin-kafka
+    depends_on:
+      - zookeeper
     ports:
       - "9092:9092"
-      - "8082:8082"
+      - "29092:29092"
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
     networks:
       - osin_network
 
-  api:
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: osin-kafka-ui
+    ports:
+      - "8080:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: local
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka:29092
+      KAFKA_CLUSTERS_0_ZOOKEEPER: zookeeper:2181
+    depends_on:
+      - kafka
+    networks:
+      - osin_network
+
+  # Graph Intelligence
+  neo4j:
+    image: neo4j:5.15.0
+    container_name: osin-graph
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    environment:
+      - NEO4J_AUTH=neo4j/password
+      - NEO4J_PLUGINS=["apoc"]
+    volumes:
+      - osin_neo4j_data:/data
+    networks:
+      - osin_network
+
+  # OSIN Backend
+  backend:
     build:
       context: .
       dockerfile: ./backend/Dockerfile
-    container_name: osin-api
-    depends_on:
-      - db
-      - redis
-      - redpanda
-    env_file:
-      - .env
+    container_name: osin-backend
+    depends_with_health:
+      kafka:
+        condition: service_started
+      neo4j:
+        condition: service_started
+    env_file: .env
     ports:
       - "8000:8000"
     networks:
       - osin_network
 
-  worker:
+  # Intelligent Processors
+  nlp-processor:
     build:
       context: .
-      dockerfile: ./backend/Dockerfile
-    container_name: osin-worker
-    command: celery -A app.workers.worker worker --loglevel=info
+      dockerfile: ./processors/nlp/Dockerfile
+    container_name: osin-nlp-processor
     depends_on:
-      - redis
-      - db
-      - redpanda
-    env_file:
-      - .env
+      - kafka
+    env_file: .env
     networks:
       - osin_network
 
-  monitoring:
-    image: prom/prometheus:latest
-    container_name: osin-monitor
+  cv-processor:
+    build:
+      context: .
+      dockerfile: ./processors/cv/Dockerfile
+    container_name: osin-cv-processor
+    depends_on:
+      - kafka
+    env_file: .env
+    networks:
+      - osin_network
+
+  # Data Producers
+  satellite-producer:
+    build:
+      context: .
+      dockerfile: ./producers/satellite/Dockerfile
+    container_name: osin-satellite-producer
+    depends_on:
+      - kafka
+    env_file: .env
+    networks:
+      - osin_network
+
+  social-producer:
+    build:
+      context: .
+      dockerfile: ./producers/social/Dockerfile
+    container_name: osin-social-producer
+    depends_on:
+      - kafka
+    env_file: .env
+    networks:
+      - osin_network
+
+  # XR Intelligence Bridge
+  xr-bridge:
+    build:
+      context: .
+      dockerfile: ./server/xr-bridge/Dockerfile
+    container_name: osin-xr-bridge
+    depends_on:
+      - kafka
+    ports:
+      - "3001:3001"
+    environment:
+      - KAFKA_BOOTSTRAP_SERVERS=kafka:29092
+    networks:
+      - osin_network
+
+  # LLM & Voice Intelligence Service
+  llm-backend:
+    build:
+      context: .
+      dockerfile: ./server/llm-backend/Dockerfile
+    container_name: osin-llm-backend
+    ports:
+      - "8001:8000"
+    env_file: .env
+    networks:
+      - osin_network
+
+  # Collaborative Multiplayer Server
+  multiplayer-server:
+    build:
+      context: .
+      dockerfile: ./server/multiplayer-server/Dockerfile
+    container_name: osin-multiplayer-server
+    ports:
+      - "4000:4000"
+    networks:
+      - osin_network
+
+  # SVP-1 Health & Observability Monitor
+  health-monitor:
+    build:
+      context: .
+      dockerfile: ./server/health_monitor/Dockerfile
+    container_name: osin-health-monitor
+    ports:
+      - "8002:8002"
+      - "8003:8003"
+    depends_on:
+      - kafka
+      - backend
+      - llm-backend
+      - xr-bridge
+    networks:
+      - osin_network
+
+  # SVP-2 Auto-Healing & Self-Recovery
+  autoheal-manager:
+    build:
+      context: .
+      dockerfile: ./server/autoheal/Dockerfile
+    container_name: osin-autoheal
+    depends_on:
+      - health-monitor
+    environment:
+      - HEALTH_MONITOR_URL=http://health-monitor:8002/health
     volumes:
-      - ./monitoring/prometheus.yml:/etc/prometheus/prometheus.yml
-    ports:
-      - "9090:9090"
+      - /var/run/docker.sock:/var/run/docker.sock
     networks:
       - osin_network
 
-  grafana:
-    image: grafana/grafana:latest
-    container_name: osin-viz
-    ports:
-      - "3000:3000"
+  # SVP-2 Alerting & Notification Engine
+  alert-manager:
+    build:
+      context: .
+      dockerfile: ./server/alerting/Dockerfile
+    container_name: osin-alert-manager
     depends_on:
-      - monitoring
+      - health-monitor
+    env_file: .env
     networks:
       - osin_network
 
 networks:
+
+
+
   osin_network:
     driver: bridge
 
 volumes:
-  osin_db_data:
+  osin_neo4j_data:

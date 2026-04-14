@@ -1,0 +1,85 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nlp-processor
+  namespace: osin-system
+  labels:
+    app: nlp-processor
+    version: v12
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: nlp-processor
+  template:
+    metadata:
+      labels:
+        app: nlp-processor
+        version: v12
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/port: "8000"
+    spec:
+      containers:
+      - name: nlp-processor
+        image: osin/nlp-processor:v12
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          name: metrics
+        env:
+        - name: KAFKA_BOOTSTRAP_SERVERS
+          value: "osin-kafka-kafka-bootstrap.osin-system.svc.cluster.local:9092"
+        - name: PROMETHEUS_PORT
+          value: "8000"
+        - name: TRACING_ENABLED
+          value: "true"
+        - name: JAEGER_AGENT_HOST
+          value: "jaeger-agent.osin-system"
+        # MinIO Model Storage Integration
+        - name: MODEL_STORAGE_TYPE
+          value: "minio"
+        - name: MINIO_ENDPOINT
+          value: "minio.osin-system.svc.cluster.local:9000"
+        - name: MINIO_BUCKET
+          value: "intelligence-models"
+        - name: MINIO_ROOT_USER
+          valueFrom:
+            secretKeyRef:
+              name: minio-secret
+              key: root-user
+        - name: MINIO_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: minio-secret
+              key: root-password
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+          limits:
+            memory: "2Gi"
+            cpu: "1"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 45
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 10
+          periodSeconds: 10
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values: ["nlp-processor"]
+              topologyKey: "kubernetes.io/hostname"
