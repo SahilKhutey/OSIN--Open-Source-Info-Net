@@ -8,6 +8,7 @@ The OSIN Ingestion Suite provides modular, robust pipelines for collecting data 
 
 - **Multi-Strategy Ingestion**: Fallback mechanisms combining official APIs, browser automation (Playwright), and scraping.
 - **Advanced Intelligence**: Built-in trend detection, sentiment analysis, entity extraction, and content categorization.
+- **Transcendence Intelligence**: Advanced temporal replay (T1-T4), futuristic 3D mission orchestration, and XR-ready command environments.
 - **Production Observability**: Full Prometheus metrics, health checks, data quality assurance, and Grafana dashboards.
 - **Cloud-Native Deployment**: Kubernetes manifests with Horizontal Pod Autoscaling (HPA) and ServiceMonitors.
 - **Compliance First**: Automated rate limiting, metadata-only modes, and adherence to platform-specific policies.
@@ -23,6 +24,14 @@ The OSIN Ingestion Suite provides modular, robust pipelines for collecting data 
 | **LinkedIn** | Playwright + Proxy Rotation | Job market trends, company profiling |
 | **News** | newspaper3k + RSS + GDELT | Event correlation, cross-source verification |
 
+## 🕹️ Transcendence Command Center
+
+The OSIN Dashboard has been evolved into the **Transcendence Command Center**, featuring:
+- **Temporal Replay Engine**: Navigate through historic intelligence data with T1-T4 granularity.
+- **3D Geo-Intelligence**: Fully immersive global threat visualization using Three.js and custom GLSL shaders.
+- **AI Mission Orchestration**: Autonomous agent coordination via the integrated LLM Command Interface.
+- **XR Ready**: Seamless transition into Extended Reality (AR/VR) for immersive mission monitoring.
+
 ## 🛠️ Architecture
 
 ### Streaming & Storage
@@ -37,11 +46,12 @@ The OSIN Ingestion Suite provides modular, robust pipelines for collecting data 
 ## 📂 Directory Structure
 
 - `backend/`: Core FastAPI intelligence engine and API.
-- `dashboard/`: 3D Geo-Intelligence React interface.
+- `dashboard/`: React 3D interface (Transcendence Command Center).
 - `services/`: Specialized microservices (e.g., Deduplication).
 - `scripts/`: Operational utility and launch scripts.
 - `docs/`: Comprehensive guides, manuals, and technical documentation.
-- `secure/`: Platform configuration, secrets, and K8s manifests.
+- `infrastructure/`: Platform configuration, secrets, and K8s manifests.
+
 
 ## 🚀 Getting Started
 
