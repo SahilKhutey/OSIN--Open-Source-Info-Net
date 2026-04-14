@@ -1,5 +1,23 @@
-import { EventEmitter } from 'events';
 import { useMemo, useCallback } from 'react';
+
+/**
+ * Lightweight browser-compatible EventEmitter
+ */
+class EventEmitter {
+  private listeners: Record<string, Function[]> = {};
+
+  on(event: string, listener: Function) {
+    if (!this.listeners[event]) this.listeners[event] = [];
+    this.listeners[event].push(listener);
+    return this;
+  }
+
+  emit(event: string, ...args: any[]) {
+    if (!this.listeners[event]) return false;
+    this.listeners[event].forEach(listener => listener(...args));
+    return true;
+  }
+}
 
 interface LLMResponse {
   response: string;

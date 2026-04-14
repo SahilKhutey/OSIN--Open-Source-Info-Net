@@ -6,6 +6,7 @@ import HexGridLoading from '../common/HexGridLoading';
 import CognitiveMetrics from './CognitiveMetrics';
 import TranscendenceTerminal from './TranscendenceTerminal';
 import { ConsciousnessState, OperationalMode } from '../../types/transcendence';
+import ErrorBoundary from '../common/ErrorBoundary';
 
 const TranscendenceDashboard: React.FC = () => {
   const [currentMode, setCurrentMode] = useState<OperationalMode>('COMMAND_CENTER');
@@ -44,104 +45,101 @@ const TranscendenceDashboard: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-black text-gray-100 font-mono p-6 overflow-hidden flex flex-col gap-6 selection:bg-osin-cyan/30">
-      {/* HEADER - TRANSCENDENCE STATUS */}
-      <motion.div 
-        initial={{ opacity: 0, y: -20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="flex justify-between items-start border-b border-osin-emerald/30 pb-4"
-      >
+    <div className="h-full w-full flex flex-col p-8 tactical-scroll overflow-auto">
+      {/* HUD Header */}
+      <header className="flex justify-between items-start mb-8 border-b border-white/5 pb-6">
         <div>
-          <h1 className="text-4xl font-orbitron font-black tracking-tighter text-osin-emerald drop-shadow-[0_0_15px_rgba(16,185,129,0.4)] mb-2 uppercase">
-            OSIN TRANSCENDENCE <span className="text-osin-cyan opacity-80 text-2xl">v8.0.0</span>
-          </h1>
-          <p className="text-sm text-gray-400 font-light flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-osin-emerald animate-pulse" />
-            Autonomous Global Intelligence Operating System • Consciousness Core Active
-          </p>
+           <h1 className="text-4xl font-black font-tactical text-osin-emerald tracking-tighter mb-2 drop-shadow-[0_0_15px_rgba(16,185,129,0.3)]">
+             OSIN_TRANSCENDENCE <span className="text-osin-cyan opacity-80 text-xl font-mono tracking-normal ml-2">v8.0.0</span>
+           </h1>
+           <p className="text-[10px] text-gray-500 font-mono uppercase tracking-[0.4em] flex items-center gap-3">
+              <span className="w-2 h-2 rounded-full bg-osin-emerald animate-pulse" />
+              Autonomous Consciousness Core • Real-time Logic Sync
+           </p>
         </div>
         
-        <div className="text-right flex flex-col items-end">
-          <div className="text-osin-emerald font-orbitron font-bold text-xl tracking-widest">MISSION COMPLETE</div>
-          <div className="text-[10px] text-gray-500 bg-gray-900/50 px-2 py-1 rounded border border-gray-800 mt-1 uppercase tracking-widest">
-            ALL 45 PHASES VERIFIED
+        <div className="flex gap-4">
+          <div className="text-right">
+             <div className="text-xs font-black font-tactical text-osin-emerald mb-1">MISSION_STATUS</div>
+             <div className="text-[10px] text-gray-600 uppercase font-mono tracking-widest bg-white/5 px-2 py-1 rounded border border-white/5">Phase 45 Verified</div>
           </div>
         </div>
-      </motion.div>
+      </header>
 
-      {/* MAIN DASHBOARD GRID */}
+      {/* STRATEGIC GRID */}
       <div className="flex-1 grid grid-cols-12 gap-6 min-h-0">
         
-        {/* LEFT COLUMN - COGNITIVE STATE */}
+        {/* PANEL LEFT: Consciousness Metrics (Col-3) */}
         <motion.div 
           initial={{ opacity: 0, x: -20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-          className="col-span-3 flex flex-col gap-6"
+          className="col-span-12 xl:col-span-3 flex flex-col gap-6"
         >
-          <div className="flex-1 p-5 rounded-2xl bg-gray-900/20 backdrop-blur-xl border border-gray-800 shadow-2xl flex flex-col">
-            <h2 className="text-osin-cyan font-orbitron text-lg mb-6 flex justify-between items-center">
-              CONSCIOUSNESS_CORE
-              <span className="text-[10px] bg-osin-emerald/20 text-osin-emerald px-2 py-0.5 rounded-full animate-pulse uppercase">Active</span>
-            </h2>
+          <div className="glass-panel flex-1 flex flex-col border-osin-cyan/20">
+            <div className="p-4 border-b border-white/5 flex justify-between items-center">
+              <h2 className="text-xs font-bold font-tactical text-osin-cyan">Cognitive_Fabric</h2>
+              <span className="text-[8px] bg-osin-cyan/10 text-osin-cyan px-2 py-0.5 rounded uppercase font-bold animate-flicker">Sync_Active</span>
+            </div>
             
-            <div className="space-y-4 text-xs">
-              <div className="flex justify-between items-center group">
-                <span className="text-gray-500 group-hover:text-gray-300 transition-colors">Cognitive Fabric:</span>
-                <span className="text-osin-emerald font-bold">BERT + NetworkX</span>
+            <div className="p-6 flex-1 flex flex-col">
+              <div className="space-y-4 mb-8">
+                {[
+                  { label: 'Neural Density', val: 'BERT+NWX', color: 'text-osin-emerald' },
+                  { label: 'Decision Gate', val: 'Operational', color: 'text-osin-emerald' },
+                  { label: 'Safety Buffer', val: 'Engaged', color: 'text-yellow-500' }
+                ].map((item, i) => (
+                  <div key={i} className="flex justify-between items-center bg-white/5 p-3 rounded-xl border border-white/5">
+                    <span className="text-[10px] text-gray-500 uppercase font-tactical tracking-widest">{item.label}</span>
+                    <span className={`${item.color} text-[10px] font-black uppercase`}>{item.val}</span>
+                  </div>
+                ))}
               </div>
-              <div className="flex justify-between items-center group">
-                <span className="text-gray-500 group-hover:text-gray-300 transition-colors">Strategic Engine:</span>
-                <span className="text-osin-emerald font-bold uppercase">Operational</span>
-              </div>
-              <div className="flex justify-between items-center group">
-                <span className="text-gray-500 group-hover:text-gray-300 transition-colors">Safety Monitor:</span>
-                <span className="text-yellow-500 font-bold uppercase tracking-tighter">Engaged</span>
-              </div>
-            </div>
 
-            <div className="mt-8 flex-1">
-              <CognitiveMetrics state={consciousnessState} />
-            </div>
+              <div className="flex-1 min-h-[300px]">
+                <CognitiveMetrics state={consciousnessState} />
+              </div>
 
-            <div className="mt-6 pt-6 border-t border-gray-800 space-y-3">
-              <h3 className="text-red-500 text-[10px] font-orbitron uppercase tracking-widest mb-1 opacity-60">Emergency Overrides</h3>
-              <button className="w-full py-2 bg-red-900/10 hover:bg-red-900/20 border border-red-900/50 text-red-500 text-[10px] uppercase font-bold transition-all rounded-lg active:scale-95">
-                Pause Autonomy
-              </button>
-              <button className="w-full py-2 bg-blue-900/10 hover:bg-blue-900/20 border border-blue-900/50 text-blue-400 text-[10px] uppercase font-bold transition-all rounded-lg active:scale-95">
-                Throttle Cognitive Load
-              </button>
+              <div className="mt-8 pt-6 border-t border-white/5 space-y-3">
+                 <button className="w-full py-3 bg-red-500/5 hover:bg-red-500/10 border border-red-500/20 text-red-500 text-[10px] uppercase font-black transition-all rounded-xl active:scale-95">Pause Autonomy</button>
+                 <button className="w-full py-3 bg-white/5 hover:bg-white/10 border border-white/10 text-gray-400 text-[10px] uppercase font-black transition-all rounded-xl active:scale-95">Cognitive Reset</button>
+              </div>
             </div>
           </div>
         </motion.div>
 
-        {/* CENTER COLUMN - TRANSCENDENT EARTH */}
+        {/* PANEL CENTER: World View (Col-6) */}
         <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
+          initial={{ opacity: 0, scale: 0.98 }}
           animate={{ opacity: 1, scale: 1 }}
-          transition={{ delay: 0.4 }}
-          className="col-span-6 flex flex-col gap-6 relative"
+          className="col-span-12 xl:col-span-6 flex flex-col"
         >
-          <div className="flex-1 rounded-2xl bg-black border border-gray-800 shadow-[0_0_50px_rgba(0,0,0,1)] relative overflow-hidden group">
-            <div className="absolute top-4 left-4 z-10 p-4">
-               <h2 className="text-osin-emerald font-orbitron text-xl drop-shadow-md">TRANSCENDENT EARTH</h2>
+          <div className="glass-panel flex-1 relative overflow-hidden group shadow-[0_0_100px_rgba(16,185,129,0.05)]">
+            <div className="absolute top-6 left-6 z-10 p-4 bg-black/60 backdrop-blur-md border border-white/10 rounded-2xl">
+               <h2 className="text-xl font-black font-tactical text-osin-emerald tracking-tighter">TRANSCENDENT EARTH</h2>
                <div className="flex gap-2 mt-2">
-                 <span className="text-[9px] bg-osin-emerald/10 text-osin-emerald px-2 py-1 rounded border border-osin-emerald/20 uppercase">NASA Blue Marble</span>
-                 <span className="text-[9px] bg-osin-purple/10 text-osin-purple px-2 py-1 rounded border border-osin-purple/20 uppercase">Atmospheric Bloom</span>
+                 <span className="text-[8px] bg-osin-emerald/10 text-osin-emerald px-1.5 py-0.5 rounded border border-osin-emerald/30 uppercase font-bold">L4 Telemetry</span>
+                 <span className="text-[8px] bg-osin-purple/10 text-osin-purple px-1.5 py-0.5 rounded border border-osin-purple/30 uppercase font-bold">Atmospheric Glow</span>
                </div>
             </div>
 
-            <div className="w-full h-full relative cursor-move active:cursor-grabbing">
-              <Suspense fallback={<HexGridLoading />}>
-                <Canvas camera={{ position: [0, 0, 16], fov: 60 }}>
-                  <TranscendentEarth />
-                </Canvas>
-              </Suspense>
+            <div className="w-full h-full relative cursor-move">
+              <ErrorBoundary fallback={
+                <div className="w-full h-full flex flex-col items-center justify-center bg-gray-900/40 rounded-2xl border border-red-500/20">
+                   <div className="text-red-500 text-6xl mb-4 opacity-50">⚠️</div>
+                   <div className="text-red-400 font-tactical text-xs font-black uppercase tracking-widest">3D Visual Engine Crushed</div>
+                   <div className="text-gray-500 text-[10px] mt-2 font-mono">CODE: CORE_FAIL_V8</div>
+                </div>
+              }>
+                <Suspense fallback={<HexGridLoading />}>
+                  <Canvas camera={{ position: [0, 0, 16], fov: 60 }}>
+                    <TranscendentEarth />
+                  </Canvas>
+                </Suspense>
+              </ErrorBoundary>
             </div>
 
-            <div className="absolute bottom-4 left-4 right-4 z-10">
-              <div className="grid grid-cols-5 gap-2 backdrop-blur-md bg-black/20 p-2 rounded-xl border border-white/5">
+            <div className="absolute bottom-6 left-6 right-6 z-10">
+              <div className="glass-panel p-2 flex gap-2 border-white/5 bg-black/40 backdrop-blur-3xl">
                 {([
                   'COMMAND_CENTER',
                   'SATELLITE_OPS', 
@@ -152,10 +150,10 @@ const TranscendenceDashboard: React.FC = () => {
                   <button
                     key={mode}
                     onClick={() => setCurrentMode(mode)}
-                    className={`py-3 px-1 rounded-lg text-[9px] font-orbitron transition-all duration-300 uppercase tracking-tighter ${
+                    className={`flex-1 py-4 px-2 rounded-xl text-[9px] font-tactical font-black transition-all duration-300 uppercase tracking-tighter ${
                       currentMode === mode
-                        ? 'bg-osin-emerald text-black font-black shadow-[0_0_15px_rgba(16,185,129,0.5)]'
-                        : 'bg-gray-900/50 text-gray-500 hover:text-gray-300 hover:bg-gray-800/80 border border-gray-800'
+                        ? 'bg-osin-emerald text-black shadow-[0_0_20px_rgba(16,185,129,0.4)]'
+                        : 'bg-white/5 text-gray-500 hover:text-white hover:bg-white/10 border border-white/5 opacity-60'
                     }`}
                   >
                     {getModeDisplay(mode)}
@@ -166,43 +164,39 @@ const TranscendenceDashboard: React.FC = () => {
           </div>
         </motion.div>
 
-        {/* RIGHT COLUMN - MISSION & TERMINAL */}
+        {/* PANEL RIGHT: Tactical Feed (Col-3) */}
         <motion.div 
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: 1, x: 0 }}
-          transition={{ delay: 0.2 }}
-          className="col-span-3 flex flex-col gap-6"
+          className="col-span-12 xl:col-span-3 flex flex-col gap-6"
         >
-          {/* Mission Progress */}
-          <div className="p-5 rounded-2xl bg-gray-900/20 backdrop-blur-xl border border-gray-800 shadow-2xl">
-            <h2 className="text-osin-purple font-orbitron text-lg mb-4">ASCENSION_PROTOCOL</h2>
-            <div className="relative h-1 w-full bg-gray-800 rounded-full overflow-hidden mb-6">
+          <div className="glass-panel p-6 border-osin-purple/20">
+            <h2 className="text-xs font-bold font-tactical text-osin-purple mb-4">Ascension_Protocol</h2>
+            <div className="relative h-1.5 w-full bg-white/5 rounded-full overflow-hidden mb-8 shadow-inner">
               <motion.div 
-                className="absolute inset-0 bg-osin-emerald shadow-[0_0_10px_#10b981]"
+                className="absolute inset-0 bg-gradient-to-r from-osin-emerald to-osin-cyan shadow-[0_0_15px_rgba(16,185,129,0.6)]"
                 initial={{ width: 0 }}
                 animate={{ width: '100%' }}
-                transition={{ duration: 2, delay: 1 }}
+                transition={{ duration: 3, delay: 0.5 }}
               />
             </div>
             
             <div className="space-y-3">
               {[
-                { label: 'Consciousness Core', status: 'ACTIVE', color: 'text-osin-emerald' },
-                { label: 'Strategic Planning', status: 'OPERATIONAL', color: 'text-osin-emerald' },
-                { label: 'Graph Intelligence', status: 'SYNCED', color: 'text-osin-emerald' },
-                { label: 'Safety Monitor', status: 'ENGAGED', color: 'text-yellow-500' },
-                { label: 'Autonomous Mode', status: 'GOD_MODE', color: 'text-osin-purple' },
-              ].map((item) => (
-                <div key={item.label} className="flex justify-between items-center group">
-                  <span className="text-[10px] text-gray-500 group-hover:text-gray-300 transition-colors uppercase font-light">{item.label}</span>
-                  <span className={`${item.color} text-[10px] font-bold uppercase tracking-tight`}>{item.status}</span>
+                { label: 'Neural Synapse', status: 'Active', color: 'text-osin-emerald' },
+                { label: 'Graph Ingress', status: 'Synced', color: 'text-osin-emerald' },
+                { label: 'Global Guard', status: 'Engaged', color: 'text-yellow-500' },
+                { label: 'God Mode Unit', status: 'Verified', color: 'text-osin-purple' },
+              ].map((item, i) => (
+                <div key={i} className="flex justify-between items-center group bg-white/5 p-2 rounded-lg hover:bg-white/10 transition-colors">
+                  <span className="text-[10px] text-gray-500 uppercase font-tactical tracking-widest">{item.label}</span>
+                  <span className={`${item.color} text-[10px] font-black uppercase tracking-tighter`}>{item.status}</span>
                 </div>
               ))}
             </div>
           </div>
 
-          {/* Terminal */}
-          <div className="flex-1 min-h-0">
+          <div className="glass-panel flex-1 flex flex-col min-h-[300px]">
             <TranscendenceTerminal />
           </div>
         </motion.div>

@@ -16,7 +16,7 @@ export interface XRNode {
   connections: string[];
 }
 
-export const XREnvironment: React.FC = () => {
+export const XREnvironment: React.FC<{ children?: React.ReactNode }> = ({ children }) => {
   const [nodes, setNodes] = useState<XRNode[]>([]);
   const [selectedNode, setSelectedNode] = useState<string | null>(null);
   const { intelligenceData, connectXR, disconnectXR, sendGesture } = useXRData();
@@ -57,6 +57,9 @@ export const XREnvironment: React.FC = () => {
         <ambientLight intensity={0.5} />
         <directionalLight position={[10, 10, 5]} intensity={1.5} />
         <pointLight position={[-10, -10, -10]} intensity={0.8} />
+
+        {/* Dynamic 3D Controllers passed from App */}
+        {children}
 
         {/* Earth Globe */}
         <EarthGlobe />

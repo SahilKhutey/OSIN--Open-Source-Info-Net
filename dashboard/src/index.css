@@ -2,44 +2,86 @@
 @tailwind components;
 @tailwind utilities;
 
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+@layer base {
+  :root {
+    --osin-emerald: 16 185 129;
+    --osin-cyan: 34 211 238;
+    --osin-purple: 168 85 247;
+    --osin-black: 0 0 0;
+    --osin-gray: 17 24 39;
+  }
+
+  * {
+    @apply border-white/5;
+  }
+
+  body {
+    @apply bg-black text-white antialiased overflow-hidden font-mono;
+    background-image: 
+      radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.05) 0%, transparent 50%),
+      radial-gradient(circle at 0% 0%, rgba(34, 211, 238, 0.03) 0%, transparent 40%);
+  }
+
+  h1, h2, h3, h4, .font-tactical {
+    @apply font-orbitron tracking-tighter uppercase;
+  }
 }
 
-body {
-  background: #000;
-  color: #00ff00;
-  font-family: 'Courier New', monospace;
-  overflow: hidden;
+@layer components {
+  .glass-panel {
+    @apply bg-gray-900/20 backdrop-blur-xl border border-white/10 rounded-2xl shadow-2xl;
+    @apply transition-all duration-300;
+  }
+
+  .glass-panel-hover {
+    @apply hover:bg-gray-800/30 hover:border-white/20 hover:shadow-[0_0_30px_rgba(255,255,255,0.05)];
+  }
+
+  .tactical-header {
+    @apply border-b border-white/5 pb-4 mb-6 flex justify-between items-center;
+  }
+
+  .osin-button-primary {
+    @apply px-4 py-2 bg-osin-emerald/20 border border-osin-emerald/50 text-osin-emerald rounded-lg;
+    @apply hover:bg-osin-emerald/30 hover:shadow-[0_0_15px_rgba(16,185,129,0.3)] transition-all active:scale-95;
+    @apply font-orbitron text-[10px] font-bold tracking-widest uppercase;
+  }
+
+  .osin-button-secondary {
+    @apply px-4 py-2 bg-white/5 border border-white/10 text-gray-400 rounded-lg;
+    @apply hover:bg-white/10 hover:text-white transition-all active:scale-95;
+    @apply font-orbitron text-[10px] font-bold tracking-widest uppercase;
+  }
+
+  .tactical-scroll {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(16, 185, 129, 0.3) transparent;
+  }
+
+  .tactical-scroll::-webkit-scrollbar {
+    @apply w-1.5 h-1.5;
+  }
+
+  .tactical-scroll::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  .tactical-scroll::-webkit-scrollbar-thumb {
+    @apply bg-white/10 rounded-full hover:bg-white/20 transition-colors;
+  }
 }
 
 #root {
-  width: 100%;
-  height: 100vh;
+  @apply w-full h-screen relative overflow-hidden;
 }
 
-.app {
-  width: 100%;
-  height: 100%;
+/* Custom Tactical Animations */
+@keyframes flicker {
+  0% { opacity: 1; }
+  50% { opacity: 0.8; }
+  100% { opacity: 1; }
 }
 
-/* Global Scrollbar */
-::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-::-webkit-scrollbar-track {
-  background: #111;
-}
-
-::-webkit-scrollbar-thumb {
-  background: #00ff00;
-  border-radius: 4px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: #00cc00;
+.animate-flicker {
+  animation: flicker 0.1s infinite;
 }

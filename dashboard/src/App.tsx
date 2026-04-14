@@ -16,10 +16,13 @@ import { PerformanceOptimizer } from './performance/PerformanceOptimizer';
 import { useHaptic } from './haptic/HapticController';
 import { useLLMAgent } from './llm/LLMAgent';
 import { useWebSocket } from './hooks/useWebSocket';
+import { motion, AnimatePresence } from 'framer-motion';
 import './App.css';
 
+type TabType = 'dashboard' | 'analytics' | 'command' | 'satellite' | 'geointel' | 'advanced' | 'autonomous' | 'transcendence' | 'xr';
+
 function App() {
-  const [activeTab, setActiveTab] = useState<'dashboard' | 'analytics' | 'command' | 'satellite' | 'geointel' | 'advanced' | 'autonomous' | 'transcendence' | 'xr'>('transcendence');
+  const [activeTab, setActiveTab] = useState<TabType>('transcendence');
   const [users, setUsers] = useState<any[]>([]);
   const [voiceStatus, setVoiceStatus] = useState('ready');
   
@@ -31,12 +34,10 @@ function App() {
 
   const handleVoiceCommand = async (command: any) => {
     console.log('Voice Command Received:', command.text);
-    haptic.onTaskComplete(); // Confirmation pulse
+    haptic.onTaskComplete();
 
     try {
       const result = await askAgent(command.text);
-      
-      // Execute multi-sensory feedback and actions
       if (result.actions) {
         result.actions.forEach((action: string) => {
           processAction(action, result.parameters);
@@ -50,177 +51,178 @@ function App() {
 
   const processAction = (action: string, params: any) => {
     console.log(`OSIN Executive: Executing ${action}`, params);
-    
     switch (action) {
-      case 'SHOW_THREATS':
-        haptic.onThreatDetected();
-        break;
-      case 'ANALYZE_NODE':
-        haptic.onNodeSelect();
-        break;
-      case 'ZOOM_EARTH':
-        haptic.feedback('medium');
-        break;
-      default:
-        haptic.feedback('light');
+      case 'SHOW_THREATS': haptic.onThreatDetected(); break;
+      case 'ANALYZE_NODE': haptic.onNodeSelect(); break;
+      case 'ZOOM_EARTH': haptic.feedback('medium'); break;
+      default: haptic.feedback('light');
     }
   };
 
+  const navItems: { id: TabType; label: string; icon: string; color: string }[] = [
+    { id: 'transcendence', label: 'Transcendence', icon: '🌌', color: 'emerald' },
+    { id: 'dashboard', label: 'Analytics Hub', icon: '📊', color: 'blue' },
+    { id: 'xr', label: 'XR Command', icon: '🖐️', color: 'cyan' },
+    { id: 'command', label: 'Command Ctr', icon: '🚀', color: 'blue' },
+    { id: 'satellite', label: 'Satellite Ops', icon: '🛰️', color: 'indigo' },
+    { id: 'geointel', label: 'Geo-Intel', icon: '📍', color: 'emerald' },
+    { id: 'advanced', label: 'Temporal Ops', icon: '⏳', color: 'purple' },
+  ];
+
   return (
-    <div className="min-h-screen bg-black text-green-400 font-mono">
-      <header className="bg-gray-900 border-b border-green-500 p-4 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-bold text-blue-400">OSIN GEO-INTELLIGENCE</h1>
-          <nav className="flex gap-2">
-            <button 
-              className={`px-4 py-2 rounded transition-colors ${
-                activeTab === 'dashboard' 
-                  ? 'bg-green-900 text-white border border-green-400' 
-                  : 'hover:bg-gray-800 border border-gray-700'
-              }`}
-              onClick={() => setActiveTab('dashboard')}
-            >
-              3D Dashboard
-            </button>
-            <button 
-              className={`px-4 py-2 rounded transition-colors ${
-                activeTab === 'analytics' 
-                  ? 'bg-green-900 text-white border border-green-400' 
-                  : 'hover:bg-gray-800 border border-gray-700'
-              }`}
-              onClick={() => setActiveTab('analytics')}
-            >
-              Analytics
-            </button>
-            <button 
-              className={`px-4 py-2 rounded transition-colors ${
-                activeTab === 'command' 
-                  ? 'bg-blue-900 text-white border border-blue-400' 
-                  : 'hover:bg-gray-800 border border-gray-700 text-blue-400 border-blue-900/40'
-              }`}
-              onClick={() => setActiveTab('command')}
-            >
-              🚀 Command Center
-            </button>
-            <button 
-              className={`px-4 py-2 rounded transition-colors ${
-                activeTab === 'satellite' 
-                  ? 'bg-indigo-900 text-white border border-indigo-400' 
-                  : 'hover:bg-gray-800 border border-gray-700 text-indigo-400 border-indigo-900/40'
-              }`}
-              onClick={() => setActiveTab('satellite')}
-            >
-              🛰️ Satellite Ops
-            </button>
-            <button 
-              className={`px-4 py-2 rounded transition-colors ${
-                activeTab === 'geointel' 
-                  ? 'bg-emerald-900 text-white border border-emerald-400' 
-                  : 'hover:bg-gray-800 border border-gray-700 text-emerald-400 border-emerald-900/40'
-              }`}
-              onClick={() => setActiveTab('geointel')}
-            >
-              📍 Geo-Intelligence
-            </button>
-            <button 
-              className={`px-4 py-2 rounded transition-colors ${
-                activeTab === 'advanced' 
-                  ? 'bg-purple-900 text-white border border-purple-400' 
-                  : 'hover:bg-gray-800 border border-gray-700 text-purple-400 border-purple-900/40'
-              }`}
-              onClick={() => setActiveTab('advanced')}
-            >
-              ⏳ Time-Travel Command
-            </button>
-            <button 
-              className={`px-4 py-2 rounded transition-colors ${
-                activeTab === 'transcendence' 
-                  ? 'bg-osin-emerald text-black border border-osin-emerald shadow-[0_0_15px_rgba(16,185,129,0.4)]' 
-                  : 'hover:bg-gray-800 border border-gray-700 text-osin-emerald border-osin-emerald/20'
-              }`}
-              onClick={() => setActiveTab('transcendence')}
-            >
-              🌌 Transcendence
-            </button>
-            <button 
-              className={`px-4 py-2 rounded transition-colors ${
-                activeTab === 'xr' 
-                  ? 'bg-cyan-900 text-white border border-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.5)]' 
-                  : 'hover:bg-gray-800 border border-gray-700 text-cyan-400 border-cyan-900/40'
-              }`}
-              onClick={() => setActiveTab('xr')}
-            >
-              🖐️ XR Command
-            </button>
+    <div className="flex h-screen w-screen bg-[#020408] text-white overflow-hidden">
+      
+      {/* STRATEGIC SIDEBAR - Fixed proportions */}
+      <aside className="w-20 lg:w-64 flex flex-col bg-black/40 backdrop-blur-3xl border-r border-white/5 z-[100] transition-all duration-500 overflow-hidden">
+        <div className="p-6">
+          <div className="flex items-center gap-3 mb-10">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-tr from-osin-emerald to-osin-cyan flex items-center justify-center shadow-[0_0_20px_rgba(16,185,129,0.3)] animate-flicker">
+                <span className="text-xl">O</span>
+            </div>
+            <div className="hidden lg:block">
+                <h1 className="text-lg font-black tracking-tighter text-white font-tactical">OSIN COMMAND</h1>
+                <p className="text-[9px] text-osin-emerald opacity-60 tracking-widest uppercase font-mono">Core Node 8.0</p>
+            </div>
+          </div>
+
+          <nav className="space-y-2">
+            {navItems.map((item) => (
+              <button
+                key={item.id}
+                onClick={() => {
+                    setActiveTab(item.id);
+                    haptic.feedback('light');
+                }}
+                className={`w-full group relative flex items-center gap-4 px-4 py-3 rounded-xl transition-all duration-300 ${
+                  activeTab === item.id 
+                    ? `bg-osin-${item.color}/10 border border-osin-${item.color}/30 text-osin-${item.color} shadow-[0_0_20px_rgba(255,255,255,0.02)]`
+                    : 'hover:bg-white/5 border border-transparent text-gray-500 hover:text-gray-300'
+                }`}
+              >
+                <span className="text-xl opacity-80 group-hover:scale-110 transition-transform">{item.icon}</span>
+                <span className="hidden lg:block font-tactical text-[11px] font-bold tracking-widest whitespace-nowrap">{item.label}</span>
+                {activeTab === item.id && (
+                    <motion.div 
+                        layoutId="activeTabIndicator"
+                        className={`absolute left-0 w-1 h-1/2 bg-osin-${item.color} rounded-full`}
+                    />
+                )}
+              </button>
+            ))}
           </nav>
         </div>
-      </header>
-      
-      <main className={(activeTab === 'command' || activeTab === 'satellite' || activeTab === 'geointel' || activeTab === 'advanced' || activeTab === 'autonomous' || activeTab === 'xr') ? '' : 'p-4'}>
-        <div className={(activeTab === 'command' || activeTab === 'satellite' || activeTab === 'geointel' || activeTab === 'advanced' || activeTab === 'autonomous' || activeTab === 'xr') ? 'w-full h-[calc(100vh-73px)]' : 'max-w-7xl mx-auto'}>
-          <Suspense fallback={<HexGridLoading />}>
-            {activeTab === 'dashboard' && <Dashboard />}
-            {activeTab === 'analytics' && <EnhancedAnalytics />}
-            {activeTab === 'command' && <OSINCommandCenter />}
-            {activeTab === 'satellite' && <SatelliteCommandCenter />}
-            {activeTab === 'geointel' && <GeoIntelligenceCommandCenter />}
-            {activeTab === 'advanced' && <AdvancedCommandCenter />}
-            {activeTab === 'autonomous' && <AutonomousCommandCenter />}
-            {activeTab === 'transcendence' && <TranscendenceDashboard />}
-            {activeTab === 'xr' && (
-              <>
-                <XREnvironment />
-                <VoiceController 
-                  onCommand={handleVoiceCommand} 
-                  onStatusChange={setVoiceStatus} 
-                />
-                <MultiplayerController 
-                  onUsersUpdate={setUsers} 
-                  onUserJoin={(u) => console.log('MP: Joining', u.name)}
-                  onUserLeave={(id) => console.log('MP: Leaving', id)}
-                />
-                <PerformanceOptimizer maxNodes={400} />
-                
-                {/* Collaborative Avatars */}
-                {users.map(u => (
-                  <UserAvatar key={u.id} user={u} />
-                ))}
 
-                {/* Immersive HUD Overlay */}
-                <div className="absolute top-20 right-6 flex flex-col gap-2 pointer-events-none z-[60]">
-                  <div className="bg-black/60 backdrop-blur-md border border-cyan-500/30 px-3 py-1 rounded text-[10px] uppercase flex items-center gap-2">
-                      <span className={`w-1.5 h-1.5 rounded-full ${voiceStatus === 'listening' ? 'bg-red-500 animate-pulse' : 'bg-cyan-500'}`}></span>
-                      SENSOR: {voiceStatus}
-                  </div>
-                  <div className="bg-black/60 backdrop-blur-md border border-cyan-500/30 px-3 py-1 rounded text-[10px] uppercase flex items-center gap-2">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>
-                      ACTIVE ANALYSTS: {users.length}
-                  </div>
+        <div className="mt-auto p-6 space-y-4">
+            <div className="hidden lg:block bg-white/5 rounded-xl p-4 border border-white/5">
+                <div className="flex justify-between items-center mb-2">
+                    <span className="text-[10px] text-gray-500 uppercase font-tactical">System Load</span>
+                    <span className="text-[10px] text-osin-emerald font-bold uppercase font-tactical">Optimal</span>
                 </div>
-              </>
-            )}
-          </Suspense>
+                <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
+                    <div className="h-full w-2/3 bg-osin-emerald shadow-[0_0_10px_#10b981]" />
+                </div>
+            </div>
+            
+            <button 
+                onClick={() => window.location.reload()}
+                className="w-full flex items-center justify-center gap-2 py-3 bg-red-500/5 hover:bg-red-500/10 border border-red-500/20 text-red-500 rounded-xl transition-all group"
+            >
+                <span className="text-xs group-hover:rotate-180 transition-transform duration-500">🔄</span>
+                <span className="hidden lg:block text-[9px] font-black tracking-[0.2em] font-tactical">HARD RELOAD</span>
+            </button>
         </div>
+      </aside>
+
+      {/* MAIN INTELLIGENCE HUB */}
+      <main className="flex-1 relative flex flex-col min-w-0 bg-[radial-gradient(circle_at_50%_0%,_#111827_0%,_transparent_50%)]">
+        
+        {/* UPPER HUD - Status bar */}
+        <header className="h-20 flex items-center justify-between px-10 border-b border-white/5 backdrop-blur-md z-40">
+            <div className="flex items-center gap-10">
+                <div className="flex items-center gap-3">
+                    <span className="text-xs text-gray-500 font-tactical uppercase">Operation:</span>
+                    <span className="text-xs text-osin-cyan font-black font-tactical tracking-widest uppercase">
+                        {navItems.find(i => i.id === activeTab)?.label}
+                    </span>
+                </div>
+                <div className="hidden xl:flex items-center gap-6 opacity-40">
+                   <div className="h-4 w-px bg-white/20" />
+                   <div className="flex items-center gap-3">
+                        <span className="text-[10px] text-gray-500 font-tactical">SEC_LEVEL:</span>
+                        <span className="text-[10px] text-white font-bold font-mono">P0-V8</span>
+                   </div>
+                   <div className="flex items-center gap-3">
+                        <span className="text-[10px] text-gray-500 font-tactical">GEO_NODE:</span>
+                        <span className="text-[10px] text-white font-bold font-mono">GLOBAL.OSIN.001</span>
+                   </div>
+                </div>
+            </div>
+
+            <div className="flex items-center gap-6">
+                <div className="flex -space-x-3">
+                    {users.slice(0, 3).map((u, i) => (
+                        <div key={i} className="w-8 h-8 rounded-full border-2 border-black bg-gray-800 flex items-center justify-center text-[10px] font-bold shadow-xl">
+                            {u.name[0]}
+                        </div>
+                    ))}
+                    {users.length > 3 && (
+                        <div className="w-8 h-8 rounded-full border-2 border-black bg-osin-emerald text-black flex items-center justify-center text-[10px] font-black shadow-xl">
+                            +{users.length - 3}
+                        </div>
+                    )}
+                </div>
+                <div className="h-8 w-px bg-white/10" />
+                <div className={`px-4 py-2 border rounded-lg flex items-center gap-3 transition-colors ${voiceStatus === 'listening' ? 'border-red-500/50 bg-red-500/10' : 'border-white/10 bg-white/5'}`}>
+                    <span className={`w-2 h-2 rounded-full ${voiceStatus === 'listening' ? 'bg-red-500 animate-pulse' : 'bg-osin-emerald'}`} />
+                    <span className="text-[10px] font-tactical font-bold uppercase tracking-widest">Acoustic: {voiceStatus}</span>
+                </div>
+            </div>
+        </header>
+
+        {/* CONTENT VIEWPORT */}
+        <div className="flex-1 overflow-auto tactical-scroll relative">
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key={activeTab}
+                    initial={{ opacity: 0, scale: 0.99, y: 10 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 1.01, y: -10 }}
+                    transition={{ duration: 0.4, ease: "circOut" }}
+                    className="h-full w-full"
+                >
+                    <Suspense fallback={<HexGridLoading />}>
+                        {activeTab === 'dashboard' && <Dashboard />}
+                        {activeTab === 'analytics' && <EnhancedAnalytics />}
+                        {activeTab === 'command' && <OSINCommandCenter />}
+                        {activeTab === 'satellite' && <SatelliteCommandCenter />}
+                        {activeTab === 'geointel' && <GeoIntelligenceCommandCenter />}
+                        {activeTab === 'advanced' && <AdvancedCommandCenter />}
+                        {activeTab === 'autonomous' && <AutonomousCommandCenter />}
+                        {activeTab === 'transcendence' && <TranscendenceDashboard />}
+                        {activeTab === 'xr' && (
+                            <XREnvironment>
+                                <MultiplayerController 
+                                    onUsersUpdate={setUsers} 
+                                    onUserJoin={(u) => console.log('MP: Joining', u.name)}
+                                    onUserLeave={(id) => console.log('MP: Leaving', id)}
+                                />
+                                <PerformanceOptimizer maxNodes={400} />
+                                {users.map(u => <UserAvatar key={u.id} user={u} />)}
+                            </XREnvironment>
+                        )}
+                    </Suspense>
+                </motion.div>
+            </AnimatePresence>
+            
+            {/* INLINE CONTROLLERS */}
+            {activeTab === 'xr' && (
+                <VoiceController onCommand={handleVoiceCommand} onStatusChange={setVoiceStatus} />
+            )}
+        </div>
+
+        {/* DATA GLOW OVERLAY */}
+        <div className="absolute inset-x-0 bottom-0 h-64 bg-gradient-to-t from-osin-emerald/5 to-transparent pointer-events-none" />
       </main>
-
-
-      {/* Floating XR Toggle Button for immersive switching */}
-      {activeTab !== 'xr' && (
-        <button 
-            onClick={() => setActiveTab('xr')}
-            className="fixed bottom-8 right-8 bg-cyan-600 hover:bg-cyan-500 text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-all z-[100] group flex items-center gap-2"
-        >
-            <span className="hidden group-hover:block font-bold text-xs tracking-tighter">LAUNCH XR</span>
-            <span className="text-xl">🖐️</span>
-        </button>
-      )}
-
-      
-      {(activeTab !== 'command' && activeTab !== 'satellite' && activeTab !== 'geointel' && activeTab !== 'advanced' && activeTab !== 'transcendence') && (
-        <footer className="bg-gray-900 border-t border-green-500 p-4 text-center text-sm text-gray-500 mt-8">
-          <p>OSIN Geo-Intelligence System • Real-time Global Monitoring • Advanced 3D Analytics</p>
-        </footer>
-      )}
     </div>
   );
 }

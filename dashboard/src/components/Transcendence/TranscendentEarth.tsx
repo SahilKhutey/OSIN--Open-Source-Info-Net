@@ -1,6 +1,6 @@
-import React, { useRef, useMemo } from 'react';
+import React, { useRef, useMemo, useState, useEffect } from 'react';
 import { useFrame } from '@react-three/fiber';
-import { useTexture, Stars, Float } from '@react-three/drei';
+import { Stars, Float } from '@react-three/drei';
 import * as THREE from 'three';
 import { Bloom, EffectComposer, Vignette } from '@react-three/postprocessing';
 
@@ -13,18 +13,76 @@ const TranscendentEarth: React.FC = () => {
   const cloudsRef = useRef<THREE.Mesh>(null!);
   const atmosphereRef = useRef<THREE.Mesh>(null!);
 
-  const [dayTexture, nightTexture, cloudTexture] = useTexture([EARTH_DAY, EARTH_NIGHT, EARTH_CLOUDS]);
+  const [textures, setTextures] = useState<{
+    day: THREE.Texture | null;
+    night: THREE.Texture | null;
+    clouds: THREE.Texture | null;
+  }>({ day: null, night: null, clouds: null });
+
+  const [isReady, setIsReady] = useState(false);
+  const [error, setError] = useState(false);
+
+  useEffect(() => {
+    const loader = new THREE.TextureLoader();
+    const loadTexture = (url: string) => {
+      return new Promise<THREE.Texture>((resolve, reject) => {
+        loader.load(url, resolve, undefined, reject);
+      });
+    };
+
+    Promise.allSettled([
+      loadTexture(EARTH_DAY),
+      loadTexture(EARTH_NIGHT),
+      loadTexture(EARTH_CLOUDS)
+    ]).then((results) => {
+      const successData = results.map(r => r.status === 'fulfilled' ? r.value : null);
+      setTextures({
+        day: successData[0],
+        night: successData[1],
+        clouds: successData[2]
+      });
+      if (results.some(r => r.status === 'rejected')) {
+        console.warn("OSIN Visuals: Some Earth textures failed to load. Using procedural fallbacks.");
+        setError(true);
+      }
+      
+      // Delay mounting of post-processing to ensure GPU context is steady
+      setTimeout(() => setIsReady(true), 1500);
+    });
+  }, []);
 
   const earthMaterial = useMemo(() => {
+    if (!textures.day && !textures.night) {
+      // High-quality procedural fallback
+      return new THREE.MeshPhongMaterial({
+        color: new THREE.Color(0x0a1a2f),
+        emissive: new THREE.Color(0x002244),
+        specular: new THREE.Color(0x111111),
+        shininess: 25,
+      });
+    }
+
     return new THREE.MeshPhongMaterial({
-      map: dayTexture,
-      emissiveMap: nightTexture,
+      map: textures.day || undefined,
+      emissiveMap: textures.night || undefined,
       emissive: new THREE.Color(0xffff88),
-      emissiveIntensity: 0.5,
+      emissiveIntensity: textures.night ? 0.5 : 0,
       specular: new THREE.Color(0x333333),
       shininess: 15,
+      color: textures.day ? 0xffffff : 0x0a1a2f
     });
-  }, [dayTexture, nightTexture]);
+  }, [textures.day, textures.night]);
+
+  const cloudMaterial = useMemo(() => {
+    return new THREE.MeshPhongMaterial({
+      map: textures.clouds || undefined,
+      color: textures.clouds ? 0xffffff : 0x444444,
+      transparent: true,
+      opacity: textures.clouds ? 0.4 : 0.1,
+      blending: THREE.AdditiveBlending,
+      side: THREE.DoubleSide,
+    });
+  }, [textures.clouds]);
 
   useFrame(({ clock }) => {
     if (!earthRef.current || !cloudsRef.current || !atmosphereRef.current) return;
@@ -56,13 +114,7 @@ const TranscendentEarth: React.FC = () => {
         {/* Clouds Layer */}
         <mesh ref={cloudsRef}>
           <sphereGeometry args={[5.05, 128, 128]} />
-          <meshPhongMaterial
-            map={cloudTexture}
-            transparent
-            opacity={0.4}
-            blending={THREE.AdditiveBlending}
-            side={THREE.DoubleSide}
-          />
+          <primitive object={cloudMaterial} attach="material" />
         </mesh>
 
         {/* Atmospheric Glow */}
@@ -83,16 +135,22 @@ const TranscendentEarth: React.FC = () => {
       <directionalLight position={[10, 5, 7]} intensity={2.5} />
       <pointLight position={[-10, -5, -10]} color={0x0077ff} intensity={2} />
       
-      {/* Visual Excellence Filters */}
-      <EffectComposer>
+      {/* Visual Excellence Filters - Recreated on texture state change for stability */}
+      <EffectComposer key={textures.day ? 'with-textures' : 'no-textures'} disableNormalPass>
         <Bloom 
           luminanceThreshold={0.5} 
-          mipmapBlur 
-          intensity={1.5} 
+          intensity={1.2} 
           radius={0.4} 
         />
         <Vignette eskil={false} offset={0.1} darkness={1.1} />
       </EffectComposer>
+
+      {/* Error Indicator (Subtle) */}
+      {error && (
+        <group position={[0, -7, 0]}>
+           {/* Non-intrusive metadata about visual degradation */}
+        </group>
+      )}
     </>
   );
 };
